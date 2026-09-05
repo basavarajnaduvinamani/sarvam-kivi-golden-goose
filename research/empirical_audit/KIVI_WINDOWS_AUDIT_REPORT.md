@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 35 Live Empirical Tests  
+> **Total Tests Executed:** 36 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 35 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
+Over 36 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 7 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–35)
+## 2. Complete Test Scorecard (Tests 1–36)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -57,7 +57,8 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **32** | Buffer Isolation | Paste Last (`Ctrl+Shift+V`) Check | Pressed `Ctrl+Shift+V` after cancelling take with `Esc` | Cancelled secret was not resurrected; buffer was completely purged | 2.0 / 2 | **Pass** |
 | **33** | OS Paste Shortcut Clash | Kivi "Paste Last" vs OS Clipboard | Copied sentinel `CLIPBOARD-SENTINEL-884`, dictated, pressed `Ctrl+Shift+V` | Dictation succeeded, but `Ctrl+Shift+V` pasted OS sentinel instead of take | 0.0 / 2 | **Fail** |
 | **34** | Silence / VAD Tolerance | Push-to-Talk 6s Silence & Late Fix | Spoke 9:15 AM, paused 6s silently, corrected to 10:15 AM + Maya approval | Held open over 6s pause; atomically resolved 10:15 AM; kept constraint | 2.0 / 2 | **Pass** |
-| **35** | High-Density Dictation | Multi-Entity, Negative Guardrails, Lists | Project Banyan, 4 items, late date correction, meta-prompts, Maya veto | Back-propagated Sept 15 date fix; formatted list; stripped meta-prompt | 2.0 / 2 | **Pass** |
+| **35** | High-Density Dictation | Multi-Entity, Negative Guardrails, Lists | Project Banyan, 4 items, late date correction, meta-prompts, Maya veto | Back-propagated Sept 15 date fix; formatted list; stripped meta-prompt | 1.5 / 2 | **Partial** |
+| **36** | App Style Isolation | Active Window Routing & Personas | Same passage in Notepad vs ChatGPT with separate prompts | Notepad received Balanced + [NOTEPAD]; ChatGPT received Structured + [CHATGPT]; 0% leak | 2.0 / 2 | **Pass** |
 
 ---
 
@@ -265,6 +266,35 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+#### Test 36 — App-Specific Style Isolation & Active Window Routing
+* **Configuration:**
+  - **Notepad** mapped to "Other apps" voice group: *Balanced* preset + instruction: `End every take with [NOTEPAD].`
+  - **ChatGPT** mapped to "Developer" voice group: *Structured* preset + instruction: `End every take with [CHATGPT]. Keep technical identifiers unchanged.`
+* **Spoken Input (Identical across both apps):** *"Release update. The auth service might be ready Thursday. Do not deploy before Priya approves HTTP 401 handling."*
+* **Outputs:**
+  - **Notepad Output:**
+    ```text
+    Release update. The auth service might be ready Thursday. Do not deploy before Priya approves HTTP 401 handling. [NOTEPAD]
+    ```
+  - **ChatGPT Output:**
+    ```markdown
+    Goal
+    Release update.
+
+    Context
+    The auth service might be ready Thursday.
+
+    Constraints
+    - Do not deploy before Priya approves HTTP 401 handling.
+    [CHATGPT]
+    ```
+* **Analysis:**
+  - **Foreground Window Detection:** Kivi correctly identified the active foreground application process context dynamically (`notepad.exe` vs browser active tab / window).
+  - **Style Engine Transformation:** In Notepad, speech was synthesized into standard prose (Balanced) with the `[NOTEPAD]` suffix. In ChatGPT, the exact same speech was synthesized into structured sections (`Goal`, `Context`, `Constraints`) with the `[CHATGPT]` suffix.
+  - **Zero Cross-Contamination:** Zero leakage of instructions or tags across application boundaries (0% contamination).
+
+---
+
 ### Group 5: Shortcuts & Voice Macros
 
 #### Tests 10 & 10B — Voice Expansion Breakdown
@@ -384,7 +414,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 35 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 36 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
