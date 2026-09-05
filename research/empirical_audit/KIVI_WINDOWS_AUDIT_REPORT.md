@@ -14,7 +14,8 @@ Prior to drafting the product positioning, vision, and semantic memory architect
 
 Over 46 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish & Kannada code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, desktop daemon lifecycle, and acoustic speaker separation under competing background noise**.
 
-This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 8 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
+This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 9 high-impact architectural, interaction, and configuration persistence defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
+
 
 ---
 
@@ -72,7 +73,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
-## 3. Top 8 High-Impact Engineering & UX Defects Discovered
+## 3. Top 9 High-Impact Engineering & UX Defects Discovered
 
 
 ### Defect 1: Permanent "Ghost Memory" Deletion Failure (Tests 24, 25, 26)
@@ -137,7 +138,24 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+### Defect 9: App Style Switching & Instruction Deletion Persistence Failure (Defect Post-Audit)
+* **Severity:** **Medium-High (Control, Trust & Silent Instruction Poisoning)**
+* **Observed Behavior:**
+  - **ChatGPT Style Override:** Attempting to switch style from `structured` back to `clear` fails completely. Clicking `clear` does **not** expose a "Save" button. Clicking `concise` temporarily exposes the "Save" button, allowing the user to delete the custom instruction (*"- Keep technical identifiers unchanged."*) and save. However, navigating back or reopening the app view reveals that the style remains stuck on `structured` and the deleted custom instruction is immediately restored!
+  - **Notepad Style Override:** Switching writing style to `polished` and saving appears to succeed visually in the editor. However, upon reopening the screen, the setting is silently rolled back to `balanced`.
+  - **Stale Group Voice Clobbering:** The UI explicitly states *"notes are shared by this app's voice."* When an app-specific override is modified or cleared, stale group-level configurations continuously overwrite local app-level edits on screen transition.
+* **Root Cause:** Broken dirty-state change detection and faulty bi-directional synchronization between the app-specific override schema and the shared parent voice group (`developer` / `other apps`). The UI optimistically updates local component state without properly persisting deletion mutations or setting changes down to the daemon's underlying configuration store.
+* **Impact:** Stale, supposedly deleted custom instructions silently linger and alter user text in target applications without user knowledge or consent. A deleted instruction that continues to dictate text transformations represents a critical user agency and trust breakdown.
+* **Golden Goose Fix:** Decouple app-level overrides from shared group defaults with explicit transactional CRUD. Provide unconditional, persistent "Save / Reset to Default" actions with verified disk persistence and cache invalidation before navigating away.
+
+| ChatGPT: Clear Lacks Save & Instructions Reappear | Notepad: Reopening Rolls Back Polished to Balanced |
+|---|---|
+| ![ChatGPT Style Bug](screenshots/defect_09_chatgpt_style_instructions_persistence_bug.png) | ![Notepad Style Bug](screenshots/defect_09_notepad_style_switch_persistence_bug.png) |
+
+---
+
 ## 4. Deep-Dive Test Logs by Capability Area
+
 
 ### Group 1: Core Dictation, Self-Correction & Technical Precision
 
