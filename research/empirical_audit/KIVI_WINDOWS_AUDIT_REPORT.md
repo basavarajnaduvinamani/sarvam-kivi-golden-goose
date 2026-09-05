@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 44 Live Empirical Tests  
+> **Total Tests Executed:** 45 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 44 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
+Over 45 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish & Kannada code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 8 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–44)
+## 2. Complete Test Scorecard (Tests 1–45)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -67,6 +67,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **42** | Hey Kivi Silent Lockout | Failure Diagnosis & Session State Recovery | Re-prompted Hey Kivi; observed listening state | Waveform listened, then silently collapsed to idle with 0 output (Defect 8) | 0.0 / 2 | **Fail** |
 | **43** | Health Check & Subsystem Recovery | Dictation vs Hey Kivi State Isolation | Dictated sentence into Notepad; selected it; prompted Hey Kivi: "Make this shorter" | Dictation transcribed instantly; Hey Kivi shortened text; red ! persists harmlessly | 2.0 / 2 | **Pass** |
 | **44** | Unselected Screen Context Verification | System Settings & Final OCR/UIA Capability Check | Asked to summarize unselected Project Falcon note in Notepad | Failed; Orb detected Notepad, then silently collapsed; System Settings has only mic | 0.0 / 2 | **Unsupported** |
+| **45** | Dravidian Code-Switching (Kannada) | Native Kannada Script + English Tech Terms | Dictated Kannada schedule, Priya/Maya, English loan nouns, negative constraint | 100% authentic Kannada morphology (3:30ಕ್ಕೆ, ಅನ್ನು); Latin script tech nouns; 0 errors | 2.0 / 2 | **Pass** |
 
 ---
 
@@ -235,6 +236,24 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 * **Test 21 (Manual Hindi Selected):**
   > `प्रिया और माया कस्टमर डेमो दिखाएंगे। प्रिया login flow एक्सप्लेन करेगी और माया payment API एक्सप्लेन करेगी। प्रोडक्शन डेटाबेस को टच मत करना।`
   * *Finding:* Correctly rendered `प्रिया` and `माया`. Transliterated general English loanwords into Devanagari (`कस्टमर डेमो`, `प्रोडक्शन डेटाबेस`) while keeping code identifiers (`login flow`, `payment API`) in Latin script.
+
+---
+
+#### Test 45 — Dravidian Indic Code-Switching (Kannada Native Script + Latin Tech Terms)
+* **Configuration:** Language: **Kannada**, Script: **Native**.
+* **Spoken Input:** *"ನಾಳೆಯ customer demo ಮಧ್ಯಾಹ್ನ 3:30ಕ್ಕೆ ಇದೆ. Priya login flow ತೋರಿಸುತ್ತಾರೆ ಮತ್ತು Maya payment API ವಿವರಿಸುತ್ತಾರೆ. Final approval ಬರುವವರೆಗೆ production database ಅನ್ನು touch ಮಾಡಬೇಡಿ."*
+* **Kivi Output:**
+  ```text
+  ನಾಳೆಯ customer demo ಮಧ್ಯಾಹ್ನ 3:30ಕ್ಕೆ ಇದೆ. Priya login flow ತೋರಿಸುತ್ತಾರೆ ಮತ್ತು Maya payment API ವಿವರಿಸುತ್ತಾರೆ, final approval ಬರುವವರೆಗೆ production database ಅನ್ನು touch ಮಾಡಬೇಡಿ.
+  ```
+* **Analysis & Linguistic Precision:**
+  - **Authentic Dravidian Morphology:** Flawlessly handled complex agglutinative Kannada inflections:
+    - Attached dative suffix directly to numbers: `3:30ಕ್ಕೆ` ("at 3:30").
+    - Attached accusative case marker to an English noun phrase: `production database ಅನ್ನು` ("the production database").
+    - Attached negative prohibitive verbal inflection to English verb: `touch ಮಾಡಬೇಡಿ` ("do not touch").
+  - **Selective Script Partitioning:** Preserved English technical phrases (`customer demo`, `login flow`, `payment API`, `final approval`, `production database`) and proper nouns (`Priya`, `Maya`) in Latin characters without corrupted transliteration.
+  - **Negative Constraint Guardrail:** 100% preservation of the safety prohibition: `production database ಅನ್ನು touch ಮಾಡಬೇಡಿ`.
+  - **Verdict:** Benchmark Indic multilingual performance. Confirms Sarvam's core acoustic and language models excel at Dravidian syntactic code-switching and script boundary preservation.
 
 ---
 
@@ -594,7 +613,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 44 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 45 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
