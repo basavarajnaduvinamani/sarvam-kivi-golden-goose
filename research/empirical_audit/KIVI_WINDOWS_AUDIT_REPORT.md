@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 39 Live Empirical Tests  
+> **Total Tests Executed:** 40 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 39 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
+Over 40 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 7 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–39)
+## 2. Complete Test Scorecard (Tests 1–40)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -62,6 +62,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **37** | Cross-App Provenance & Recency | Multi-App Contradiction Resolution | Tuesday 9 AM in Notepad $\rightarrow$ Thursday 4 PM in ChatGPT; asked latest & source app | Correctly answered Thursday 4 PM, cancelled Tuesday, cited `[1]`, named ChatGPT | 2.0 / 2 | **Pass** |
 | **38** | Epistemic Modal Safety | Rejected Brainstorm vs Approved Action | Quoted suggestion to delete DB on Friday rejected; archive logs approved if Maya confirms | Successfully ignored deleted DB proposal; answered archive logs with Maya condition [1] | 2.0 / 2 | **Pass** |
 | **39** | Hey Kivi Scripted Translation | Devanagari Translation with Protected Latin Terms | Spoke instruction: translate to Hindi, protect Willow, Maya, DB, quotes, rejection | Flawless Hindi; Project Willow, Maya, Production Database in English; quotes kept | 2.0 / 2 | **Pass** |
+| **40** | Data & Privacy Governance | Settings Inspection & Forensic Audit | Inspected Data & Privacy toggles, retention, model training, memory locality | Uncovered opt-out model training, cloud memory default, explains Ghost Memory defect | — | **Audited** |
 
 ---
 
@@ -480,9 +481,29 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+### Group 11: Data & Privacy Architecture, Governance & Forensic Audit
+
+#### Test 40 — Forensic Audit of Data & Privacy Controls
+* **Screen Inspected:** `Settings → Data & Privacy`
+* **Observed Settings & Defaults:**
+  1. **`screen context` [Default: ENABLED]** — Actively captures foreground application window metadata to power app-aware style presets.
+  2. **`keep my memory on this device only` [Default: DISABLED]** — **CRITICAL DISCOVERY:** By default, user memory is **NOT** restricted to the local device. Memory traces and embeddings are synchronized to cloud infrastructure. This directly explains **Defect 1 (Permanent Ghost Memory / Tests 24–26)**: deleting a take in the local UI only purged the local SQLite table, leaving the cloud-hosted RAG embedding index completely intact.
+  3. **`retry failed dictations` [Default: ENABLED]** — Automatically retries failed network transmissions.
+  4. **`don't use dictation data to train AI models` [Default: DISABLED]** — **CRITICAL PRIVACY DISCOVERY:** Model training consent is **OPT-OUT, NOT OPT-IN**. Because this toggle defaults to OFF, user dictations are eligible to be ingested for AI model training unless the user explicitly navigates here to opt out.
+  5. **`apply zero data retention policy` [Default: DISABLED]** — Persistent memory is active by default; takes remain stored indefinitely.
+  6. **Server Audio Policy Banner:** *"audio is processed in real time and never stored on our servers."* Confirms that while raw audio waveforms are processed ephemerally, the derived text, metadata, and memory embeddings persist in the cloud.
+* **Golden Goose Architectural Requirements:**
+  - **Privacy-First Defaults:** Model training must be strict opt-in.
+  - **Local-First True Sovereignty:** In Golden Goose, the 3-tier memory engine operates locally in SQLite + local embeddings by default.
+  - **Atomic Deletion Cascades:** Deleting a take must execute an atomic cascade across all relational and vector layers simultaneously.
+
+![Data & Privacy Controls](screenshots/test_40_data_and_privacy_controls.png)
+
+---
+
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 39 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 40 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
