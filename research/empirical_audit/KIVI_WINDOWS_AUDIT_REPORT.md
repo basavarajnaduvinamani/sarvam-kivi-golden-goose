@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 41 Live Empirical Tests  
+> **Total Tests Executed:** 42 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 41 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
+Over 42 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
 
-This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 7 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
+This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 8 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–41)
+## 2. Complete Test Scorecard (Tests 1–42)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -63,11 +63,12 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **38** | Epistemic Modal Safety | Rejected Brainstorm vs Approved Action | Quoted suggestion to delete DB on Friday rejected; archive logs approved if Maya confirms | Successfully ignored deleted DB proposal; answered archive logs with Maya condition [1] | 2.0 / 2 | **Pass** |
 | **39** | Hey Kivi Scripted Translation | Devanagari Translation with Protected Latin Terms | Spoke instruction: translate to Hindi, protect Willow, Maya, DB, quotes, rejection | Flawless Hindi; Project Willow, Maya, Production Database in English; quotes kept | 2.0 / 2 | **Pass** |
 | **40** | Data & Privacy Governance | Settings Inspection & Forensic Audit | Inspected Data & Privacy toggles, retention, model training, memory locality | Uncovered opt-out model training, cloud memory default, explains Ghost Memory defect | — | **Audited** |
-| **41** | Screen Context Privacy Boundary | Passive Screen Scraping vs Explicit Selection | Tested unselected text ORBIT-426 (ON) vs LANTERN-953 (OFF) via Hey Kivi | Refused both: "can't see any code"; ON recognized app "Notepad", OFF reverted to "kivi" | 2.0 / 2 | **Privacy Pass** |
+| **41** | Screen Context Privacy Boundary | Passive Screen Scraping vs Explicit Selection | Tested unselected text ORBIT-426 (ON) vs LANTERN-953 (OFF) via Hey Kivi | Refused both: "can't see any code"; ON recognized app "Notepad", OFF reverted to "kivi" | 1.0 / 2 | **Partial** |
+| **42** | Hey Kivi Silent Lockout | Failure Diagnosis & Session State Recovery | Re-prompted Hey Kivi; observed listening state | Waveform listened, then silently collapsed to idle with 0 output (Defect 8) | 0.0 / 2 | **Fail** |
 
 ---
 
-## 3. Top 7 High-Impact Engineering & UX Defects Discovered
+## 3. Top 8 High-Impact Engineering & UX Defects Discovered
 
 ### Defect 1: Permanent "Ghost Memory" Deletion Failure (Tests 24, 25, 26)
 * **Severity:** **Critical (Security, Privacy & Compliance)**
@@ -120,6 +121,14 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 * **Observed Behavior:** Kivi's advertised shortcut `Ctrl+Shift+V` ("Paste last take") is completely inoperative or intercepted by native Windows 11 applications (such as Windows Notepad, which binds `Ctrl+Shift+V` to "Paste as plain text"). When a user dictates a take, undoes it, and attempts to recover it with `Ctrl+Shift+V`, Windows outputs the stale OS clipboard content (e.g. `CLIPBOARD-SENTINEL-884`), completely ignoring Kivi's last dictation.
 * **Root Cause:** Either Kivi fails to register an active low-level global OS keyboard hook (`RegisterHotKey` / `SetWindowsHookEx`) for `Ctrl+Shift+V`, or foreground Windows 11 applications capture the event first.
 * **Golden Goose Fix:** Provide fully customizable global hotkeys (e.g., `Ctrl+Alt+V` or `Win+Alt+V`) with explicit visual HUD feedback on the Orb when a take is successfully injected from the buffer.
+
+---
+
+### Defect 8: Silent Session Abort & Error State Lockout in Hey Kivi (Tests 41 & 42)
+* **Severity:** **Medium-High (Reliability & Interaction Failure)**
+* **Observed Behavior:** Following an error condition in Hey Kivi (indicated by a persistent red exclamation circle `!` in the popover), subsequent invocations can enter a silent lockout failure loop. The Orb visually displays the green recording waveform, but upon releasing the shortcut, the session abruptly terminates and collapses back to idle `[ - - ]` with zero output generated, zero card rendered, and zero explanatory error feedback.
+* **Root Cause:** Unhandled rejection or stale WebSocket/IPC connection state in the floating window daemon when re-invoking Hey Kivi while an unacknowledged error status is active.
+* **Golden Goose Fix:** Implement robust self-healing session teardown and explicit inline error banners with a direct 'Retry' action, preventing silent dropouts.
 
 ---
 
@@ -442,6 +451,23 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+#### Test 42 — Hey Kivi Error State Lockout & Silent Session Abort
+* **Context & Trigger:** In Test 41, Hey Kivi displayed a persistent red exclamation circle `!`. In Test 42, the user focused Notepad with unselected text, invoked Hey Kivi (`Left Ctrl + Space`), and asked: *"What code is visible in this Notepad window?"*
+* **Observed UI Behavior:**
+  - **Phase 1 (Holding Shortcut):** The Orb expanded, showing the green sparkle icon `✨`, active audio listening equalizer dots in a green pill `● ● ● ● ● ●`, and a brown cancel button `(x)`.
+  - **Phase 2 (Shortcut Release):** Upon releasing the shortcut, the Orb abruptly aborted without processing speech, completely dismissing the interaction and collapsing back to the idle pill `[ - - ]`.
+  - **Result:** Zero text generated, zero card opened, and zero error message or toast presented to the user.
+* **Analysis & Defect Classification:**
+  - Formally cataloged as **Defect 8: Silent Session Abort & Error State Lockout**.
+  - When the floating assistant encounters an unhandled error condition (signaled by the red `!` badge), subsequent sessions can fail silently instead of gracefully recovering or presenting an inline retry prompt.
+  - Highlights the need for deterministic finite state machines (FSM) and self-healing session recovery in our Golden Goose interactive layer.
+
+| Active Equalizer Waveform | Silent Abort & Idle Collapse |
+|---|---|
+| ![Active Equalizer](screenshots/test_42_orb_listening_waveform.png) | ![Idle Collapse](screenshots/test_42_orb_collapsed_idle.png) |
+
+---
+
 ### Group 8: Network Resilience & Offline Behavior
 
 #### Tests 22 & 23 — Cloud Dependency & Recovery
@@ -528,7 +554,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 41 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 42 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
