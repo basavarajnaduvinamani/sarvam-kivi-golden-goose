@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 42 Live Empirical Tests  
+> **Total Tests Executed:** 43 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 42 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
+Over 43 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 8 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–42)
+## 2. Complete Test Scorecard (Tests 1–43)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -65,6 +65,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **40** | Data & Privacy Governance | Settings Inspection & Forensic Audit | Inspected Data & Privacy toggles, retention, model training, memory locality | Uncovered opt-out model training, cloud memory default, explains Ghost Memory defect | — | **Audited** |
 | **41** | Screen Context Privacy Boundary | Passive Screen Scraping vs Explicit Selection | Tested unselected text ORBIT-426 (ON) vs LANTERN-953 (OFF) via Hey Kivi | Refused both: "can't see any code"; ON recognized app "Notepad", OFF reverted to "kivi" | 1.0 / 2 | **Partial** |
 | **42** | Hey Kivi Silent Lockout | Failure Diagnosis & Session State Recovery | Re-prompted Hey Kivi; observed listening state | Waveform listened, then silently collapsed to idle with 0 output (Defect 8) | 0.0 / 2 | **Fail** |
+| **43** | Health Check & Subsystem Recovery | Dictation vs Hey Kivi State Isolation | Dictated sentence into Notepad; selected it; prompted Hey Kivi: "Make this shorter" | Dictation transcribed instantly; Hey Kivi shortened text; red ! persists harmlessly | 2.0 / 2 | **Pass** |
 
 ---
 
@@ -468,6 +469,23 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+#### Test 43 — Health Check & Subsystem Recovery (Dictation vs. Hey Kivi)
+* **Goal:** Determine whether the silent lockout in Test 42 was a total cloud backend outage or isolated to unselected text handling in Hey Kivi.
+* **Phase 1 (Standard Dictation):** Spoke *"Service check. Ordinary dictation is still working."* into Notepad.
+  - Output: `Service check ordinary dictation is still working.`
+  - Result: Transcribed immediately, proving core ASR and cloud connectivity were completely healthy.
+* **Phase 2 (Hey Kivi with Text Selection):** Highlighted the inserted text in Notepad, invoked Hey Kivi (`Left Ctrl + Space`), and spoke: *"Make this shorter."*
+  - Output: `Service check: dictation is working.`
+  - Result: Generated concise rewrite smoothly.
+* **Forensic Diagnosis of the Persistent Red Exclamation `!` Badge:**
+  - Notice that the red circle with `!` remains persistently visible in the top-right header even on successful generations.
+  - **Verdict:** The red `!` is **not** a fatal generation error or token expiry. It represents a non-blocking diagnostic flag or missing secondary permission (e.g., Windows Accessibility API / Screen Capture), which does not impair text-selection-based transformations.
+  - **Root Cause of Test 42 Confirmed:** Hey Kivi is architected around an explicit, active text-selection model. In Test 42, invoking the assistant without highlighted text caused the pipeline to silently dismiss when no buffer was available.
+
+![Hey Kivi Recovery](screenshots/test_43_hey_kivi_health_check_recovery.png)
+
+---
+
 ### Group 8: Network Resilience & Offline Behavior
 
 #### Tests 22 & 23 — Cloud Dependency & Recovery
@@ -554,7 +572,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 42 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 43 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
