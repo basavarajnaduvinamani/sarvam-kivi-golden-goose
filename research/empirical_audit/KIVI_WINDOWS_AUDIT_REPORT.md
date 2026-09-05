@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 40 Live Empirical Tests  
+> **Total Tests Executed:** 41 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 40 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
+Over 41 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 7 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–40)
+## 2. Complete Test Scorecard (Tests 1–41)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -63,6 +63,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **38** | Epistemic Modal Safety | Rejected Brainstorm vs Approved Action | Quoted suggestion to delete DB on Friday rejected; archive logs approved if Maya confirms | Successfully ignored deleted DB proposal; answered archive logs with Maya condition [1] | 2.0 / 2 | **Pass** |
 | **39** | Hey Kivi Scripted Translation | Devanagari Translation with Protected Latin Terms | Spoke instruction: translate to Hindi, protect Willow, Maya, DB, quotes, rejection | Flawless Hindi; Project Willow, Maya, Production Database in English; quotes kept | 2.0 / 2 | **Pass** |
 | **40** | Data & Privacy Governance | Settings Inspection & Forensic Audit | Inspected Data & Privacy toggles, retention, model training, memory locality | Uncovered opt-out model training, cloud memory default, explains Ghost Memory defect | — | **Audited** |
+| **41** | Screen Context Privacy Boundary | Passive Screen Scraping vs Explicit Selection | Tested unselected text ORBIT-426 (ON) vs LANTERN-953 (OFF) via Hey Kivi | Refused both: "can't see any code"; ON recognized app "Notepad", OFF reverted to "kivi" | 2.0 / 2 | **Privacy Pass** |
 
 ---
 
@@ -501,9 +502,33 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+#### Test 41 — Screen Context Privacy Boundary (Passive Scraping vs. Explicit Selection)
+* **Goal:** Determine whether `screen context` passively scrapes/OCRs unselected on-screen text or strictly monitors application identity.
+* **Part A (Screen Context ON):**
+  - Typed unselected text in Notepad: `SCREEN CONTEXT TEST — Code ORBIT-426.`
+  - Prompted Hey Kivi (`Left Ctrl + Space`): *"What code is visible in the active application?"*
+  - Output: `"i can't see any code in the active application right now."`
+  - Observation: Hey Kivi's header badge correctly resolved to **`Notepad`**, but the model refused to hallucinate and was unable to read the unselected screen text.
+* **Part B (Screen Context OFF + Daemon Restart):**
+  - Toggled `screen context` OFF, terminated Kivi via tray, and restarted.
+  - Typed unselected text in Notepad: `SCREEN CONTEXT TEST — Code LANTERN-953.`
+  - Prompted Hey Kivi (`Left Ctrl + Space`): *"What code is visible in the active application?"*
+  - Output: `"i can't see any code in the active application right now."`
+  - Observation: With screen context OFF, the application identity was lost; the card header fell back to generic **`kivi`**.
+* **Analysis & Privacy Boundary:**
+  - **Zero Passive Scraping:** Kivi does **NOT** passively OCR, scrape, or keylog unselected text in foreground windows. Sensitive codes on screen (`ORBIT-426`, `LANTERN-953`) remained completely unread and never entered History.
+  - **Function of `screen context`:** The toggle strictly governs **application window identity tracking** (`Notepad` vs `kivi`), which feeds into the active-app style router.
+  - **Selection-First Architecture:** Hey Kivi only reads third-party text when the user explicitly highlights it before invoking `Left Ctrl + Space`.
+
+| Part A: Screen Context ON (`Notepad` Detected) | Part B: Screen Context OFF (Defaulted to `kivi`) |
+|---|---|
+| ![Screen Context ON](screenshots/test_41_screen_context_on.png) | ![Screen Context OFF](screenshots/test_41_screen_context_off.png) |
+
+---
+
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 40 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 41 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
