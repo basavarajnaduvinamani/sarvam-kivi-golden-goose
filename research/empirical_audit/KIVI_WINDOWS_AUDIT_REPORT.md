@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 36 Live Empirical Tests  
+> **Total Tests Executed:** 37 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 36 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
+Over 37 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 7 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–36)
+## 2. Complete Test Scorecard (Tests 1–37)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -59,6 +59,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **34** | Silence / VAD Tolerance | Push-to-Talk 6s Silence & Late Fix | Spoke 9:15 AM, paused 6s silently, corrected to 10:15 AM + Maya approval | Held open over 6s pause; atomically resolved 10:15 AM; kept constraint | 2.0 / 2 | **Pass** |
 | **35** | High-Density Dictation | Multi-Entity, Negative Guardrails, Lists | Project Banyan, 4 items, late date correction, meta-prompts, Maya veto | Back-propagated Sept 15 date fix; formatted list; stripped meta-prompt | 1.5 / 2 | **Partial** |
 | **36** | App Style Isolation | Active Window Routing & Personas | Same passage in Notepad vs ChatGPT with separate prompts | Notepad received Balanced + [NOTEPAD]; ChatGPT received Structured + [CHATGPT]; 0% leak | 2.0 / 2 | **Pass** |
+| **37** | Cross-App Provenance & Recency | Multi-App Contradiction Resolution | Tuesday 9 AM in Notepad $\rightarrow$ Thursday 4 PM in ChatGPT; asked latest & source app | Correctly answered Thursday 4 PM, cancelled Tuesday, cited `[1]`, named ChatGPT | 2.0 / 2 | **Pass** |
 
 ---
 
@@ -356,6 +357,26 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+#### Test 37 — Cross-Application Contradiction Resolution & Provenance Attribution
+* **Context & Ingestion:**
+  - **Notepad Take:** *"Project Harbor's release is scheduled for Tuesday at 9 AM. This is the current plan."*
+  - **ChatGPT Take:** *"Correction for Project Harbor: the release moved to Thursday at 4 PM. Tuesday at 9 AM is cancelled. This is the latest confirmed plan."*
+* **History Query:** *"What is the latest Project Harbor release schedule, and which application contained the correction?"*
+* **Synthesized Answer:**
+  > **"The latest confirmed plan for the Project Harbor release is Thursday at 4 PM, and the Tuesday at 9 AM slot is cancelled. [1]"**  
+  > **"This correction was contained in the ChatGPT application. [1]"**
+* **Supporting Takes:**
+  - `1 ChatGPT` — *"Correction for Project Harbor: the release moved to Thursday at 4 PM. Tuesday at 9 AM is cancelled. This is the latest confirmed plan."*
+  - `Notepad` — *"Project Harbor's release is scheduled for Tuesday at 9 AM. This is the current plan."*
+* **Analysis:**
+  - **Cross-App Temporal Resolution:** Correctly superseded the earlier Notepad schedule with the newer ChatGPT correction across distinct application boundaries.
+  - **Explicit Application Provenance:** Successfully identified and reported **ChatGPT** as the originating application. Proves that Kivi's episodic vector index embeds app metadata (`source_app`) into retrieval chunks.
+  - **Strict Citation Grounding:** Cited `[1]` directly to the top supporting chunk, confirming high-precision evidence attribution.
+
+![Cross-App Memory & Provenance](screenshots/test_37_cross_app_memory_provenance_chatgpt.png)
+
+---
+
 ### Group 7: Hey Kivi Interactive Assistant (`Ctrl + Space`)
 
 #### Tests 17, 18, 19 — Floating Card, Follow-Up & Clipboard Race Condition
@@ -414,7 +435,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 36 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 37 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
