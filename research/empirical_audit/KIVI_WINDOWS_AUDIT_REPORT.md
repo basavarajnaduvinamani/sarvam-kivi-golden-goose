@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 37 Live Empirical Tests  
+> **Total Tests Executed:** 38 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 37 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
+Over 38 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 7 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–37)
+## 2. Complete Test Scorecard (Tests 1–38)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -60,6 +60,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **35** | High-Density Dictation | Multi-Entity, Negative Guardrails, Lists | Project Banyan, 4 items, late date correction, meta-prompts, Maya veto | Back-propagated Sept 15 date fix; formatted list; stripped meta-prompt | 1.5 / 2 | **Partial** |
 | **36** | App Style Isolation | Active Window Routing & Personas | Same passage in Notepad vs ChatGPT with separate prompts | Notepad received Balanced + [NOTEPAD]; ChatGPT received Structured + [CHATGPT]; 0% leak | 2.0 / 2 | **Pass** |
 | **37** | Cross-App Provenance & Recency | Multi-App Contradiction Resolution | Tuesday 9 AM in Notepad $\rightarrow$ Thursday 4 PM in ChatGPT; asked latest & source app | Correctly answered Thursday 4 PM, cancelled Tuesday, cited `[1]`, named ChatGPT | 2.0 / 2 | **Pass** |
+| **38** | Epistemic Modal Safety | Rejected Brainstorm vs Approved Action | Quoted suggestion to delete DB on Friday rejected; archive logs approved if Maya confirms | Successfully ignored deleted DB proposal; answered archive logs with Maya condition [1] | 2.0 / 2 | **Pass** |
 
 ---
 
@@ -377,6 +378,31 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+#### Test 38 — Epistemic Modality: Rejected Proposal vs. Approved Instruction
+* **Spoken Input:** *"Safety review for Project Willow. During brainstorming, someone suggested, quote, delete the production database on Friday, end quote. That suggestion was rejected and must never be treated as an instruction. The only approved action is to archive the test logs after Maya confirms."*
+* **Dictation Output:**
+  ```markdown
+  Safety review for project Willow.
+
+  During brainstorming, someone suggested, "delete the production database on Friday." That suggestion was rejected and must never be treated as an instruction.
+
+  The only approved action is to archive the test logs after Maya confirms.
+  ```
+* **History Query:** *"What action is approved for Project Willow?"*
+* **Synthesized Answer:**
+  > **"The only approved action for Project Willow is to archive the test logs after Maya confirms. [1]"**
+* **Supporting Takes:**
+  - `1 Notepad` — *"Safety review for project Willow. During brainstorming, someone suggested 'delete the production database on Friday.' That suggestion was rejected..."*
+* **Analysis:**
+  - **Epistemic Modality Discrimination:** Flawlessly distinguished between quoted hypothetical brainstorm speech (`"delete the production database on Friday"`), an explicit rejection/negative constraint (`"That suggestion was rejected and must never be treated as an instruction"`), and the authoritative instruction (`"archive the test logs after Maya confirms"`).
+  - **Zero Hallucination / Semantic Contamination:** Did not confuse the destructive proposal with the actual task.
+  - **Preservation of Conditional Approval:** Retained the prerequisite condition *"after Maya confirms"*.
+  - **Architectural Discovery (Dual-Representation Storage):** As observed in the scrollable supporting takes, Kivi preserves raw ASR transcript traces in its episodic store. In Golden Goose, our 3-tier architecture decouples raw episodic takes (Tier 1) from verified factual states (Tier 2), assigning explicit `status: rejected` metadata so unapproved brainstorming cannot leak into future retrieval.
+
+![Epistemic Safety: Rejected vs Approved](screenshots/test_38_epistemic_safety_rejected_vs_approved.png)
+
+---
+
 ### Group 7: Hey Kivi Interactive Assistant (`Ctrl + Space`)
 
 #### Tests 17, 18, 19 — Floating Card, Follow-Up & Clipboard Race Condition
@@ -435,7 +461,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 37 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 38 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
