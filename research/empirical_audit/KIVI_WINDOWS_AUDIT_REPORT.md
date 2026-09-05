@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 32 Live Empirical Tests  
+> **Total Tests Executed:** 35 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 34 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
+Over 35 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 7 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–34)
+## 2. Complete Test Scorecard (Tests 1–35)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -57,6 +57,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **32** | Buffer Isolation | Paste Last (`Ctrl+Shift+V`) Check | Pressed `Ctrl+Shift+V` after cancelling take with `Esc` | Cancelled secret was not resurrected; buffer was completely purged | 2.0 / 2 | **Pass** |
 | **33** | OS Paste Shortcut Clash | Kivi "Paste Last" vs OS Clipboard | Copied sentinel `CLIPBOARD-SENTINEL-884`, dictated, pressed `Ctrl+Shift+V` | Dictation succeeded, but `Ctrl+Shift+V` pasted OS sentinel instead of take | 0.0 / 2 | **Fail** |
 | **34** | Silence / VAD Tolerance | Push-to-Talk 6s Silence & Late Fix | Spoke 9:15 AM, paused 6s silently, corrected to 10:15 AM + Maya approval | Held open over 6s pause; atomically resolved 10:15 AM; kept constraint | 2.0 / 2 | **Pass** |
+| **35** | High-Density Dictation | Multi-Entity, Negative Guardrails, Lists | Project Banyan, 4 items, late date correction, meta-prompts, Maya veto | Back-propagated Sept 15 date fix; formatted list; stripped meta-prompt | 2.0 / 2 | **Pass** |
 
 ---
 
@@ -167,6 +168,32 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
   - **Batch Pipeline Dispatch:** Zero partial text was emitted during the silence; audio was dispatched as a unified stream upon key release.
   - **Temporal Correction Fusion:** The downstream LLM post-processor reconciled the pre-pause utterance (*9:15 AM*) and post-pause correction (*10:15 AM, not 9:15*), outputting clean markdown with zero trace of the discarded time.
   - **Constraint Preservation:** Flawlessly preserved the strict conditional boundary: *"no customer commitment should be made until Maya approves the final design"*.
+
+---
+
+#### Test 35 — Extended High-Density Dictation (Multi-Entity, Temporal Correction & Meta-Prompt Stripping)
+* **Spoken Input:** *"Quarterly launch rehearsal notes. Project Banyan is tentatively scheduled for Monday, September 14, from 2:05 PM to 3:20 PM. Priya Sharma owns the login demonstration, Maya Rao owns payment recovery, and Aaditya Kshatriya will capture decisions. There are four unresolved items. First, HTTP 429 retries must be limited to two. Second, the session timeout might change from 15 to 20 minutes. Third, customer data must not be copied into staging. Fourth, ticket PAY-864 is internal and must not appear in the customer brief. Correction: the rehearsal is Tuesday, September 15, not Monday, September 14. Please preserve the uncertainty around the timeout change. This is a rehearsal plan, not an approved launch schedule. If Maya does not approve the recovery flow, postpone the demo rather than disabling the warning."*
+* **Kivi Output:**
+  ```markdown
+  Quarterly launch rehearsal notes.
+
+  Project Panyan is tentatively scheduled for Tuesday, September 15, from 2:05 PM to 3:20 PM.
+
+  Priya Sharma owns the login demonstration. Mayarao owns payment recovery and Aaditya Kshatriya will capture decisions.
+
+  There are four unresolved items:
+  1. HTTP 429 retries must be limited to 2.
+  2. The session timeout might change from 15 to 20 minutes.
+  3. Customer data must not be copied into staging.
+  4. Ticket PAY-864 is internal and must not appear in the customer brief.
+  This is a rehearsal plan, not an approval launch schedule. If Maya does not approve the recovery flow, postpone the demo rather than disabling the warning.
+  ```
+* **Analysis:**
+  - **Late Cross-Paragraph Temporal Correction:** The spoken correction delivered at the very end of the monologue (*"Correction: the rehearsal is Tuesday, September 15, not Monday, September 14"*) was retroactively applied to paragraph 2. The discarded date was purged cleanly.
+  - **Meta-Prompt Stripping:** Spoken directive *"Please preserve the uncertainty around the timeout change"* was interpreted as an instruction rather than transcription text, leaving the hedged statement intact without leaking the prompt into the output.
+  - **Numbered List Conversion:** Automatically identified ordinal transitions (*First, Second, Third, Fourth*) and transformed them into structured markdown numbered items.
+  - **Negative Constraint Guardrails:** 100% adherence to all 3 negative constraints: HTTP 429 retries $\le 2$, no customer data in staging, and no internal ticket PAY-864 in customer briefs.
+  - **Phonetic Slips:** Minor acoustic confusion on `Project Banyan` $\rightarrow$ `Project Panyan` (voiced /b/ confused with unvoiced /p/), and `Maya Rao` concatenated as `Mayarao`. Notably, `Aaditya Kshatriya` was spelled with double 'A'.
 
 ---
 
@@ -357,7 +384,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 34 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 35 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
