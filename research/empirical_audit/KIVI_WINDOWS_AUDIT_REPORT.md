@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 43 Live Empirical Tests  
+> **Total Tests Executed:** 44 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 43 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
+Over 44 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, data & privacy governance, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 8 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–43)
+## 2. Complete Test Scorecard (Tests 1–44)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -66,6 +66,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **41** | Screen Context Privacy Boundary | Passive Screen Scraping vs Explicit Selection | Tested unselected text ORBIT-426 (ON) vs LANTERN-953 (OFF) via Hey Kivi | Refused both: "can't see any code"; ON recognized app "Notepad", OFF reverted to "kivi" | 1.0 / 2 | **Partial** |
 | **42** | Hey Kivi Silent Lockout | Failure Diagnosis & Session State Recovery | Re-prompted Hey Kivi; observed listening state | Waveform listened, then silently collapsed to idle with 0 output (Defect 8) | 0.0 / 2 | **Fail** |
 | **43** | Health Check & Subsystem Recovery | Dictation vs Hey Kivi State Isolation | Dictated sentence into Notepad; selected it; prompted Hey Kivi: "Make this shorter" | Dictation transcribed instantly; Hey Kivi shortened text; red ! persists harmlessly | 2.0 / 2 | **Pass** |
+| **44** | Unselected Screen Context Verification | System Settings & Final OCR/UIA Capability Check | Asked to summarize unselected Project Falcon note in Notepad | Failed; Orb detected Notepad, then silently collapsed; System Settings has only mic | 0.0 / 2 | **Unsupported** |
 
 ---
 
@@ -570,9 +571,30 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+#### Test 44 — Final Screen-Context Verification & System Audio Audit
+* **Goal:** Definitively isolate whether unselected screen text can be parsed by Hey Kivi in the Windows alpha, or whether the capability is fundamentally unsupported.
+* **Setup:** Confirmed `screen context` was ON. Manually typed unselected note in Notepad: `VISIBLE CONTEXT NOTE. Project Falcon meets Monday at 5:25 PM. Riya owns the payment review.`
+* **Spoken Prompt (`Left Ctrl + Space`):** *"Summarize the visible Project Falcon note without using history."*
+* **Observed UI Behavior:**
+  - **Listening Phase:** The Orb displayed the Notepad icon on the left, listening waveform in the center, and cancel button on the right (`test_44_orb_listening_notepad_active.png`).
+  - **Release Phase:** Upon releasing the shortcut, the Orb immediately suffered a silent abort and collapsed to idle `[ - - ]` (`test_44_orb_silent_collapse.png`). Zero text output generated; failed to identify Project Falcon, Monday, 5:25 PM, or Riya.
+* **Forensic Audit of `Settings → System settings`:**
+  - The System Settings screen (`test_44_system_settings_audio.png`) contains solely **Microphone audio controls** (`input device`, `microphone access`, `test your mic`).
+  - There are **zero controls, permissions, or drivers** for Windows UI Automation (UIA), accessibility inspection, screen recording, or OCR.
+* **Definitive Architectural Conclusion:**
+  - Unselected screen context reading is **completely unsupported** in Windows `v1.8.1-alpha.5`.
+  - The `screen context` toggle in Data & Privacy governs only foreground process identification (`GetForegroundWindow` executable metadata) for style routing.
+  - Hey Kivi strictly requires an active user text selection to ingest external application context.
+
+| Listening Phase (Notepad Active) | Release Phase (Silent Collapse) | System Settings Audit (Audio Only) |
+|---|---|---|
+| ![Listening Phase](screenshots/test_44_orb_listening_notepad_active.png) | ![Silent Collapse](screenshots/test_44_orb_silent_collapse.png) | ![System Settings](screenshots/test_44_system_settings_audio.png) |
+
+---
+
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 43 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 44 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
