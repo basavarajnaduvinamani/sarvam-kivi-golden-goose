@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 33 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
+Over 34 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
 
-This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 6 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
+This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 7 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–33)
+## 2. Complete Test Scorecard (Tests 1–34)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -55,11 +55,12 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **30** | Position Persistence | Top vs Bottom Anchor Settings | Set position to lower marker; restarted via tray | Lower position persisted across restarts; ad-hoc drag is transient | 2.0 / 2 | **Pass** |
 | **31** | Panic Abort (`Esc`) | In-Flight Recording Cancellation | Spoke confidential secret; pressed `Esc` before release | Zero text pasted, zero History take created, buffer aborted cleanly | 2.0 / 2 | **Pass** |
 | **32** | Buffer Isolation | Paste Last (`Ctrl+Shift+V`) Check | Pressed `Ctrl+Shift+V` after cancelling take with `Esc` | Cancelled secret was not resurrected; buffer was completely purged | 2.0 / 2 | **Pass** |
-| **33** | OS Paste Shortcut Clash | Kivi "Paste Last" vs OS Clipboard | Copied sentinel `CLIPBOARD-SENTINEL-884`, dictated, pressed `Ctrl+Shift+V` | Dictation succeeded, but `Ctrl+Shift+V` pasted OS sentinel instead of take | 1.0 / 2 | **Partial** |
+| **33** | OS Paste Shortcut Clash | Kivi "Paste Last" vs OS Clipboard | Copied sentinel `CLIPBOARD-SENTINEL-884`, dictated, pressed `Ctrl+Shift+V` | Dictation succeeded, but `Ctrl+Shift+V` pasted OS sentinel instead of take | 0.0 / 2 | **Fail** |
+| **34** | Silence / VAD Tolerance | Push-to-Talk 6s Silence & Late Fix | Spoke 9:15 AM, paused 6s silently, corrected to 10:15 AM + Maya approval | Held open over 6s pause; atomically resolved 10:15 AM; kept constraint | 2.0 / 2 | **Pass** |
 
 ---
 
-## 3. Top 6 High-Impact Engineering & UX Defects Discovered
+## 3. Top 7 High-Impact Engineering & UX Defects Discovered
 
 ### Defect 1: Permanent "Ghost Memory" Deletion Failure (Tests 24, 25, 26)
 * **Severity:** **Critical (Security, Privacy & Compliance)**
@@ -150,6 +151,22 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
   Kivi-308. The production database must not be modified. This is a proposal, not an approved change.
   ```
 * **Analysis:** 100% preservation of all 4 negative constraints and epistemic status (*"proposal, not approved"*). Formatted `HTTP 401`, `10:15 and 10:17 AM`, `250 milliseconds`, and `Kivi-308`. Misheard `getUser` as `gotUser` and dropped `.ts` extension due to lack of codebase context. `Ctrl+Z` atomically undid the entire insertion.
+
+---
+
+#### Test 34 — Long Silence VAD Tolerance & Late Cross-Pause Correction
+* **Spoken Input:** *"Project Aurora's design review starts Wednesday at 9:15 AM."* $\rightarrow$ [**6 seconds continuous silence** while holding shortcut] $\rightarrow$ *"Correction, it starts at 10:15 AM, not 9:15. Priya will present three options, but no customer commitment should be made until Maya approves the final design."*
+* **Kivi Output:**
+  ```markdown
+  Project Aurora's design review starts Wednesday at 10:15 AM.
+
+  Priya will present three options, but no customer commitment should be made until Maya approves the final design.
+  ```
+* **Analysis:**
+  - **VAD Endpointing Immunity:** Standard cloud VAD cutoff timers (1.5s–3s) were completely suppressed by Kivi's push-to-talk key-down state (`L Ctrl + Win`). The Orb remained actively listening across the full 6-second silence without aborting.
+  - **Batch Pipeline Dispatch:** Zero partial text was emitted during the silence; audio was dispatched as a unified stream upon key release.
+  - **Temporal Correction Fusion:** The downstream LLM post-processor reconciled the pre-pause utterance (*9:15 AM*) and post-pause correction (*10:15 AM, not 9:15*), outputting clean markdown with zero trace of the discarded time.
+  - **Constraint Preservation:** Flawlessly preserved the strict conditional boundary: *"no customer commitment should be made until Maya approves the final design"*.
 
 ---
 
@@ -340,7 +357,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 33 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 34 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
