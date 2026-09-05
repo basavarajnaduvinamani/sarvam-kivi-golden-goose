@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 32 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
+Over 33 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 6 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–32)
+## 2. Complete Test Scorecard (Tests 1–33)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -55,6 +55,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **30** | Position Persistence | Top vs Bottom Anchor Settings | Set position to lower marker; restarted via tray | Lower position persisted across restarts; ad-hoc drag is transient | 2.0 / 2 | **Pass** |
 | **31** | Panic Abort (`Esc`) | In-Flight Recording Cancellation | Spoke confidential secret; pressed `Esc` before release | Zero text pasted, zero History take created, buffer aborted cleanly | 2.0 / 2 | **Pass** |
 | **32** | Buffer Isolation | Paste Last (`Ctrl+Shift+V`) Check | Pressed `Ctrl+Shift+V` after cancelling take with `Esc` | Cancelled secret was not resurrected; buffer was completely purged | 2.0 / 2 | **Pass** |
+| **33** | OS Paste Shortcut Clash | Kivi "Paste Last" vs OS Clipboard | Copied sentinel `CLIPBOARD-SENTINEL-884`, dictated, pressed `Ctrl+Shift+V` | Dictation succeeded, but `Ctrl+Shift+V` pasted OS sentinel instead of take | 1.0 / 2 | **Partial** |
 
 ---
 
@@ -103,6 +104,14 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 * **Severity:** **Medium (Workflow Friction)**
 * **Observed Behavior:** While individual takes in the History list have a convenient copy button, the synthesized **`answer`** modal has neither a "Copy Answer" button nor standard text selection enabled (`user-select: none`). A user who asks Kivi to draft a brief cannot easily copy the resulting text into their workflow.
 * **Golden Goose Fix:** Prominent "Copy to Clipboard" and "Insert at Cursor" action buttons on every synthesized memory answer.
+
+---
+
+### Defect 7: OS Shortcut Collision / Inoperative "Paste Last Take" (`Ctrl+Shift+V`) (Tests 32 & 33)
+* **Severity:** **Medium-High (Broken Feature & Native OS Conflict)**
+* **Observed Behavior:** Kivi's advertised shortcut `Ctrl+Shift+V` ("Paste last take") is completely inoperative or intercepted by native Windows 11 applications (such as Windows Notepad, which binds `Ctrl+Shift+V` to "Paste as plain text"). When a user dictates a take, undoes it, and attempts to recover it with `Ctrl+Shift+V`, Windows outputs the stale OS clipboard content (e.g. `CLIPBOARD-SENTINEL-884`), completely ignoring Kivi's last dictation.
+* **Root Cause:** Either Kivi fails to register an active low-level global OS keyboard hook (`RegisterHotKey` / `SetWindowsHookEx`) for `Ctrl+Shift+V`, or foreground Windows 11 applications capture the event first.
+* **Golden Goose Fix:** Provide fully customizable global hotkeys (e.g., `Ctrl+Alt+V` or `Win+Alt+V`) with explicit visual HUD feedback on the Orb when a take is successfully injected from the buffer.
 
 ---
 
@@ -314,13 +323,14 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ### Group 10: Desktop Lifecycle, Tray Menu, Position & Safety
 
-#### Tests 27 to 32 — Operating System Integration
+#### Tests 27 to 33 — Operating System Integration
 * **Test 27:** The Orb is explicitly designed as an *"always-present surface"* (remains active across minutes).
 * **Test 28:** The `inactivity timeout` setting is currently a non-functional UI stub.
 * **Test 29:** System tray right-click menu provides canonical `Exit` that terminates all UI and background daemon processes cleanly.
 * **Test 30:** Setting position in `Settings → The Orb → Position` persists to lower screen across restarts.
 * **Test 31:** Pressing `Esc` during dictation immediately aborts recording, pastes nothing, and writes zero takes.
 * **Test 32:** `Ctrl+Shift+V` ("Paste last") does not resurrect cancelled speech; buffer is expunged.
+* **Test 33:** Controlled comparison between Kivi "paste last" (`Ctrl+Shift+V`) and OS clipboard (`CLIPBOARD-SENTINEL-884`). Dictation transcribed *"Kivi last take test. Project Nimbus begins at 7:40 PM and remains a draft."* Undoing with `Ctrl+Z` and pressing `Ctrl+Shift+V` inserted `CLIPBOARD-SENTINEL-884` instead of the Nimbus take. Proves `Ctrl+Shift+V` is intercepted by Windows 11 Notepad as native unformatted paste, bypassing Kivi entirely.
 
 | Windows System Tray Menu | Lower Position Persisted | The Orb Hover States |
 |---|---|---|
@@ -330,7 +340,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 32 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 33 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
