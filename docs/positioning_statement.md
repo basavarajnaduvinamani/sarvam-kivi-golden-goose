@@ -1,0 +1,3 @@
+# Product Positioning Statement
+
+Kivi is an epistemic, voice-first ambient interface for computing. While dictation transforms speech into clean text within an active window, Kivi’s Semantic Memory transforms speech into auditable, compounding intelligence across desktop applications. By maintaining strict distinction between raw acoustics and formatted intention, resolving cross-app contradictions, and enforcing entity boundaries, Kivi preserves project context, evolving facts, and implicit preferences. Built on local-first sovereignty with atomic deletion guarantees, Kivi never assumes hypothetical musings are approved decisions. It transforms fragmented dictation into an authoritative partner that understands what you know, when it changed, and where it lives.
