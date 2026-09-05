@@ -4,7 +4,7 @@
 > **Target Role:** Golden Goose ("The Things Kivi Comes to Know") / Backend-Focused Full Stack  
 > **Tested Binary:** `kivi-win-setup.exe` (Version: `1.8.1-alpha.5`)  
 > **Environment:** Windows 11 Desktop  
-> **Total Tests Executed:** 38 Live Empirical Tests  
+> **Total Tests Executed:** 39 Live Empirical Tests  
 
 ---
 
@@ -12,13 +12,13 @@
 
 Prior to drafting the product positioning, vision, and semantic memory architecture, a comprehensive empirical test battery was conducted against the pre-release Windows binary (`v1.8.1-alpha.5`).
 
-Over 38 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
+Over 39 rigorously controlled tests, we stress-tested Kivi across **core dictation, real-time self-correction, Hinglish code-switching, dictionary-based phonetic memory, voice shortcut expansion, app-aware styles, historical RAG Q&A, Hey Kivi conversational transformations, network recovery, deletion hygiene, and desktop daemon lifecycle**.
 
 This dossier documents the exact spoken inputs, actual outputs, UI state transitions, and 7 high-impact architectural and interaction defects discovered. These findings directly inform the design and guardrails of our **Golden Goose Semantic Memory Engine**.
 
 ---
 
-## 2. Complete Test Scorecard (Tests 1–38)
+## 2. Complete Test Scorecard (Tests 1–39)
 
 | # | Test Name | Capability Tested | Spoken Input Summary | Kivi Behavior | Score | Status |
 |---|---|---|---|---|---|---|
@@ -61,6 +61,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 | **36** | App Style Isolation | Active Window Routing & Personas | Same passage in Notepad vs ChatGPT with separate prompts | Notepad received Balanced + [NOTEPAD]; ChatGPT received Structured + [CHATGPT]; 0% leak | 2.0 / 2 | **Pass** |
 | **37** | Cross-App Provenance & Recency | Multi-App Contradiction Resolution | Tuesday 9 AM in Notepad $\rightarrow$ Thursday 4 PM in ChatGPT; asked latest & source app | Correctly answered Thursday 4 PM, cancelled Tuesday, cited `[1]`, named ChatGPT | 2.0 / 2 | **Pass** |
 | **38** | Epistemic Modal Safety | Rejected Brainstorm vs Approved Action | Quoted suggestion to delete DB on Friday rejected; archive logs approved if Maya confirms | Successfully ignored deleted DB proposal; answered archive logs with Maya condition [1] | 2.0 / 2 | **Pass** |
+| **39** | Hey Kivi Scripted Translation | Devanagari Translation with Protected Latin Terms | Spoke instruction: translate to Hindi, protect Willow, Maya, DB, quotes, rejection | Flawless Hindi; Project Willow, Maya, Production Database in English; quotes kept | 2.0 / 2 | **Pass** |
 
 ---
 
@@ -419,6 +420,26 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ---
 
+#### Test 39 — Hey Kivi Translation with Protected Terms & Modal Preservation
+* **Input Text (Selected in Notepad):** Full Project Willow safety review passage from Test 38.
+* **Hey Kivi Spoken Prompt (`Left Ctrl + Space`):** *"Translate this into natural Hindi using Devanagari. Keep 'Project Willow', 'Maya', and 'production database' in English. Preserve the quotation marks, the fact that the suggestion was rejected, and the approval condition."*
+* **Hey Kivi Output:**
+  ```markdown
+  Project Willow के लिए सेफ्टी रिव्यू।
+
+  ब्रेनस्टॉर्मिंग के दौरान, किसी ने सुझाव दिया, “delete the Production Database on Friday.” उस सुझाव को रिजेक्ट कर दिया गया था और उसे कभी भी निर्देश नहीं माना जाना चाहिए।
+
+  एकमात्र अप्रूव्ड एक्शन यह है कि Maya के कन्फर्म करने के बाद टेस्ट लॉग्स को आर्काइव किया जाए।
+  ```
+* **Analysis:**
+  - **Script Bounding & Protected Entities:** Maintained `Project Willow`, `Maya`, and `Production Database` strictly in Latin characters while synthesizing surrounding context into fluent Devanagari Hindi.
+  - **Quotation & Modality Preservation:** Kept typographical quotation marks intact around the dangerous suggestion (`“delete the Production Database on Friday.”`), preserved its rejected status, and maintained the conditional prerequisite for log archiving.
+  - **Conversational Transformation Precision:** Demonstrates high-tier semantic comprehension across multi-lingual instructions and safety boundaries in the interactive floating card.
+
+![Hey Kivi Translation with Protected Terms](screenshots/test_39_hey_kivi_translation_protected_terms.png)
+
+---
+
 ### Group 8: Network Resilience & Offline Behavior
 
 #### Tests 22 & 23 — Cloud Dependency & Recovery
@@ -461,7 +482,7 @@ This dossier documents the exact spoken inputs, actual outputs, UI state transit
 
 ## 5. Architectural Blueprint for Golden Goose
 
-Based on these 38 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
+Based on these 39 empirical tests, our **Golden Goose Semantic Memory Engine** directly targets and eliminates the failure modes discovered:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
