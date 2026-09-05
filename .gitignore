@@ -1,0 +1,16 @@
+# Executables and large installers
+*.exe
+tmp/
+*.dmg
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Node / Frontend
+node_modules/
+dist/
+.DS_Store
