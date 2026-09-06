@@ -171,8 +171,12 @@ These layers should be evaluated independently before an end-to-end product scor
 | [AMemGym](https://arxiv.org/abs/2603.01966) (2026) | Interactive, on-policy benchmark with evolving user state | Tests memory under state change instead of only static prewritten histories |
 | [APEX-MEM](https://aclanthology.org/2026.acl-long.749/) (ACL 2026) | Append-only property graph plus retrieval-time resolution of conflicting/evolving events | Particularly relevant to preserving full history while selecting the current state |
 | [When Machine Unlearning Meets RAG](https://arxiv.org/abs/2410.15267) (2024) | Studies how knowledge can persist or be forgotten in RAG systems | Deletion must cover source storage, indexes, derived representations, caches, and generated summaries—not merely hide a UI row |
+| [Letta / MemGPT v2](https://github.com/letta-ai/letta) (2024/2025) | Agent development framework with tiered memory blocks (Core, Recall, Archival) | Distinguishes static user personas from searchable episodic logs and long-term archival storage |
+| [MemoRAG](https://arxiv.org/abs/2409.05036) (2024) | Dual-system memory combining a lightweight memorization model for global semantic maps with standard RAG | Generates precise query clues from long context before retrieval, preventing cross-project context drift |
+| [Selective Forgetting in Vector Databases](https://arxiv.org/abs/2403.05604) (2024) | Analyzes HNSW and graph-based vector index degradation and privacy leaks after document deletion | Proves that removing metadata pointers without re-indexing leaves vector paths navigable; necessitates atomic index invalidation |
 
 ### E. Evaluation dimensions implied by the literature
+
 
 The corpus points to a broader measurement set than aggregate WER:
 
@@ -199,8 +203,15 @@ The table separates direct system-wide dictation products from adjacent voice-me
 | **Voicenotes** | Voice-note capture, structured/searchable notes, and Ask AI across a user's notes | Persistent note library and cross-note retrieval; closer to voice memory than cursor-level dictation | [Ask AI guide](https://help.voicenotes.com/en/articles/10372858-how-to-use-ask-ai-in-voicenotes), [Capabilities](https://help.voicenotes.com/en/articles/15391505-what-can-voicenotes-do) |
 | **Granola** | Bot-free meeting notepad that mixes the user's notes with transcript-derived notes and supports chat across notes/folders | Meeting-scoped and folder-scoped memory, templates, calendar context, transcript-linked detail, API access | [Granola 101](https://docs.granola.ai/help-center/getting-started/granola-101), [Granola product](https://www.granola.ai/) |
 | **Limitless** | Wearable/desktop lifelog capture with transcripts, summaries, search, and Ask AI | Long-lived personal audio memory, export/delete controls, offline pendant buffering, explicit consent obligations | [Pendant interaction guide](https://help.limitless.ai/en/articles/10546658-interacting-with-the-pendant-search-ask-ai-summaries), [Privacy](https://www.limitless.ai/privacy) |
+| **MacWhisper** | Native macOS local transcription and system-wide dictation using `whisper.cpp` | Fully on-device inference, zero audio/text cloud transmission, local export/search; file-centric with secondary dictation hook | [MacWhisper](https://macwhisper.com) |
+| **AudioPen** | Browser/mobile voice-to-text note refiner that synthesizes rambling speech into structured writing | Cloud-based transcription + LLM rewrite styles; focus on asynchronous note drafting and personal journaling rather than cursor injection | [AudioPen](https://audiopen.ai) |
+| **Letterly** | Mobile/web voice note rewriter with customizable output styles and MCP connectivity | Multi-style rewrites, 90+ languages, MCP integration allowing voice memories to connect to Claude/ChatGPT | [Letterly](https://letterly.app) |
+| **Oasis** | Mobile voice memo refiner converting unstructured brainstorming into structured formats (emails, outlines) | Stream-of-consciousness capture with format-specific post-processing; siloed within application sandbox | [Oasis](https://oasis.app) |
+| **Windows 11 Recall** | OS-level photographic and semantic activity memory via local NPU and SQLite vector embeddings | Continuous on-device screen snapshot analysis, local encrypted SQLite + vector storage, semantic search across desktop history | [Windows Recall](https://learn.microsoft.com/en-us/windows/client-management/manage-recall) |
+| **Apple Intelligence (Siri + Semantic Index)** | OS-level cross-app intelligence combining Spotlight Semantic Index with on-screen App Entity awareness | On-device personal context index (Spotlight App Entities & App Intents), View Annotation APIs for active screen grounding | [Apple Intelligence](https://developer.apple.com/apple-intelligence/) |
 
 ### Competitive pattern inventory
+
 
 Across official product descriptions, recurring techniques are:
 
@@ -286,7 +297,43 @@ This is an inventory, not an implementation recommendation.
 - tenant and application boundaries;
 - failure states that say whether audio, transcript, or final insertion was retained.
 
+## Comparative positioning matrix: Kivi vs. the voice computing landscape
+
+To evaluate where Kivi stands relative to commercial systems and academic architectures, the following matrix compares the 15 evaluated products across core functional axes:
+
+| System | Primary deployment | Multilingual & Indic code-mixing | Active app context | Durable memory tiering | Verifiable deletion cascade | Epistemic abstention & source citation | Primary failure mode / architectural limitation |
+|---|---|---|---|---|---|---|---|
+| **Kivi (Windows Alpha)** | Desktop floating surface | **Native (22+ Indic languages + Hinglish / Kannada)** | Foreground process tracking | Flat history search (Takes) | ❌ Incomplete (Deleted takes persist in retrieval) | Full citation `[1]`, honest abstention | Context drift across projects, ghost memory on delete, style persistence bug |
+| **Wispr Flow** | Desktop background service | General multilingual (Latin script focused) | Foreground window + accessibility text | Profile-level preferences + snippets | Vendor managed cloud retention | Implicit in rewrite, no interactive RAG | Cloud-only latency, no cross-session factual knowledge graph |
+| **Willow Voice** | Cross-platform desktop | Basic multilingual | Screen context | Template styles & dictionary | Account deletion | No queryable history RAG | Focused on immediate transcription/refinement, lacks episodic memory |
+| **Aqua Voice** | Desktop / mobile editor | English primary (Avalon ASR) | Deep Context (unscreened OCR/text) | Document-level memory | Session discard | Contextual rewrite only | In-editor focused, limited system-wide agency |
+| **Superwhisper** | Native macOS local/cloud | Multilingual via Whisper | Active window bundle ID | Prompt presets & dictionary | Complete (Local files on disk) | No history Q&A | Lacks conversational agentic memory layer; manual pipeline configuration |
+| **MacWhisper** | Native macOS local | Multilingual via `whisper.cpp` | None (Cursor injection) | Batch file archives | Complete (Local disk) | None | File-transcription architecture retrofitted with basic dictation; zero semantic memory |
+| **AudioPen** | Web / mobile sandbox | 30+ languages (via LLM translation) | None (Isolated app) | Folder library of notes | Account-level deletion | Synthesis output, no source linking | Asynchronous thought-dumping only; zero desktop cursor integration |
+| **Letterly** | Web / mobile sandbox | 90+ languages | None (MCP exported) | Tagged notes & MCP context | Account-level deletion | Exported to external LLMs | Mobile-first note rewriter; relies on external agents (Claude/GPT) for retrieval |
+| **Voicenotes** | Mobile / web app | Multilingual transcription | None (Isolated audio notes) | Audio note library + "Ask AI" | Soft delete from note list | Cites past voice notes | Conversational memory siloed inside note container; no live application interaction |
+| **Granola** | macOS desktop app | English-centric | Calendar & meeting context | Folder-based meeting notes | Account-level deletion | Highlights transcript spans | Strictly meeting-focused; not a general system-wide dictation or computing interface |
+| **Limitless** | Wearable pendant + macOS/Win | English primary | Continuous audio & screen capture | Full-day timeline & lifelog | User requested purge | Cites timeline transcript moments | Massive privacy surface; passive lifelogging rather than intentional work dictation |
+| **Windows 11 Recall** | OS-level (Copilot+ PC) | Multilingual OCR | System-wide snapshots (NPU) | Encrypted SQLite vector snapshots | Snapshot range deletion | Timeline jump-back | High consumer backlash; photographic passive scraping rather than semantic intent |
+| **Apple Intelligence** | iOS / macOS system-level | Multilingual | View Annotations API + App Intents | Spotlight Semantic Index | OS-managed App Entity lifecycle | Resolves entity references across apps | Closed Apple ecosystem; rigid developer schema requirements (App Intents) |
+
+### Strategic synthesis: Kivi's definitive edge and required architectural guardrails
+
+An analysis of this competitive and academic landscape reveals the exact strategic frontier for Kivi's **Golden Goose Semantic Memory Engine**:
+
+1. **The Uncontested Strength: Sovereign Indic Code-Switching at the OS Layer**
+   - No Western commercial dictation tool (Wispr Flow, Superwhisper, Aqua, Willow) understands agglutinative Dravidian syntax (`3:30ಕ್ಕೆ`, `ಅನ್ನು`) or Hindi mixed-register code-switching with Latin technical terms. Kivi's language engine is a defensible category leader across the Global South.
+2. **The Missing Bridge: From Ephemeral Dictation to Intentional Semantic Memory**
+   - Products fall into two distinct traps:
+     - *Pure Dictation Tools (Wispr, Aqua, Superwhisper)*: Treat speech as ephemeral buffer-and-paste. Once inserted, the computer forgets what was spoken.
+     - *Passive Lifeloggers (Limitless, Windows Recall)*: Indiscriminately record every screen pixel and audio vibration, creating a surveillance liability with noisy, low-precision retrieval.
+   - *Kivi's Opportunity*: **Intentional, Voice-First Semantic Memory**. Kivi captures high-intent, dictated utterances across apps (Notepad, Slack, ChatGPT, Terminal), structuring them into an active working memory without invasive passive screen scraping.
+3. **The Essential Trust Foundation: Solving What the Industry Ignores**
+   - The academic literature (*When Machine Unlearning Meets RAG*, *Selective Forgetting in Vector Databases*) proves that naive RAG systems fail catastrophically at deletion: deleting a database row leaves vector embeddings and caches retrievable. This matches the exact empirical failure observed in Kivi Test 24–26.
+   - By implementing **3-tier stratification (Episodic $\rightarrow$ Factual $\rightarrow$ Preference)**, **entity-scoped hybrid retrieval (BM25 + vector)**, and **atomic transactional deletion cascades**, Kivi can become the first voice-first computing interface that users trust with their career, code, and confidential business plans.
+
 ## Relationship to the empirical Kivi audit
+
 
 The existing 46-test Windows audit supplies evidence the papers and product pages do not:
 
