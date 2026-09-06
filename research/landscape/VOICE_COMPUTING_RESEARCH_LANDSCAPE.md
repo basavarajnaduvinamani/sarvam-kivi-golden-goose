@@ -13,7 +13,7 @@ This landscape covers five connected but technically distinct areas:
 4. persistent, queryable assistant memory; and
 5. commercial products combining some of these capabilities.
 
-Paper claims are reported as the authors report them, not treated as independently reproduced facts. Product features are taken from official sites or documentation and are therefore vendor claims unless our empirical Kivi audit separately verifies them. Marketing benchmarks are not compared across vendors because their datasets and measurement methods differ.
+Paper claims are reported as the authors report them, not treated as independently reproduced facts. Product features are taken from official sites or documentation and are therefore vendor claims unless the empirical Kivi audit separately verifies them. Marketing benchmarks are not compared across vendors because their datasets and measurement methods differ.
 
 ## Important identity correction: WhisperFlow is not Wispr Flow
 
