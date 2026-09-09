@@ -1,0 +1,3 @@
+# Product Positioning Statement
+
+For multilingual knowledge workers who dictate decisions across desktop applications, Kivi is a voice-first, project-scoped memory that turns intentional speech into a traceable record of what was decided, revised, rejected, or left open. Where ordinary dictation ends at formatted text and passive capture records broad activity, Kivi carries verified context into Hey Kivi while preserving Indic code-switching, Take IDs, and user control. It crosses application boundaries without crossing confirmed project boundaries, abstains when evidence is insufficient, and makes every retained memory inspectable, correctable, and revocable.
