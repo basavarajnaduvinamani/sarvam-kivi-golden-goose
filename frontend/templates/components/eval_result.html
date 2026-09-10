@@ -1,0 +1,54 @@
+{% if not run %}
+<div class="error-box">
+    <p>No evaluation runs found.</p>
+</div>
+{% else %}
+<div class="eval-dashboard" style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
+    <h3>Run ID: {{ run.run_id }} ({{ run.mode }})</h3>
+    <p style="font-size: 0.85em; color: #666;">Started: {{ run.started_at.strftime('%Y-%m-%d %H:%M:%S') }} | Cases: {{ run.case_count }}</p>
+
+    <div class="metrics-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: #f9f9f9; padding: 1rem; border-radius: 4px;">
+        <div><strong>Pass Rate:</strong> {{ "%.1f"|format(run.metrics.pass_rate * 100) }}% ({{ run.metrics.passed }}/{{ run.metrics.total_cases }})</div>
+        <div><strong>Answer Correctness:</strong> {{ "%.1f"|format(run.metrics.answer_correctness * 100) }}%</div>
+        <div><strong>Abstention Precision:</strong> {{ "%.1f"|format(run.metrics.abstention_precision * 100) }}%</div>
+        <div><strong>Abstention Recall:</strong> {{ "%.1f"|format(run.metrics.abstention_recall * 100) }}%</div>
+        <div><strong>Conflict Detection:</strong> {{ "%.1f"|format(run.metrics.conflict_detection_accuracy * 100) }}%</div>
+        <div><strong>Project Scope Acc:</strong> {{ "%.1f"|format(run.metrics.project_scope_accuracy * 100) }}%</div>
+        <div><strong>Decision Status Acc:</strong> {{ "%.1f"|format(run.metrics.decision_status_accuracy * 100) }}%</div>
+        <div><strong>Temporal Correction:</strong> {{ "%.1f"|format(run.metrics.temporal_correction_accuracy * 100) }}%</div>
+        <div><strong>Provenance Coverage:</strong> {{ "%.1f"|format(run.metrics.provenance_coverage * 100) }}%</div>
+        <div><strong>Deletion Integrity:</strong> {{ "%.1f"|format(run.metrics.deletion_integrity * 100) }}%</div>
+    </div>
+
+    <h4 style="margin-top: 1rem;">Integrity Violations</h4>
+    <ul style="color: red; font-size: 0.9em;">
+        <li>Cross Project Leakage: {{ run.metrics.cross_project_leakage_count }}</li>
+        <li>Deleted Memory Resurrection: {{ run.metrics.deleted_memory_resurrection_count }}</li>
+        <li>Invalid Citation: {{ run.metrics.invalid_citation_count }}</li>
+        <li>Rejected Proposal Promotion: {{ run.metrics.rejected_proposal_promotion_count }}</li>
+        <li>Fabricated Answer: {{ run.metrics.fabricated_answer_count }}</li>
+    </ul>
+
+    <h4 style="margin-top: 1rem;">Individual Case Inspection</h4>
+    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 0.5rem;">
+        {% for case in run.cases %}
+            <div style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #eee;">
+                <strong>{{ case.case_id }}</strong> - {{ case.category }}
+                <span style="color: {{ 'green' if case.passed else 'red' }}; float: right;">{{ "PASS" if case.passed else "FAIL" }}</span>
+                <p style="margin: 0.2rem 0; font-size: 0.9em;">Q: {{ case.question }}</p>
+                
+                {% if not case.passed %}
+                <p style="margin: 0.2rem 0; font-size: 0.8em; color: red;">Failures: {{ case.failure_reasons | join(', ') }}</p>
+                {% endif %}
+
+                <div style="font-size: 0.8em; color: #555;">
+                    Takes: 
+                    {% for tid in case.supporting_take_ids %}
+                        <a href="#" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer-container" style="text-decoration: underline;">{{ tid }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

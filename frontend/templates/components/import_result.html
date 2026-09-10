@@ -1,0 +1,29 @@
+{% if error %}
+<div class="error-box" style="color: red; border: 1px solid red; padding: 1rem; border-radius: 4px;">
+    <strong>Import Error:</strong> {{ error }}
+</div>
+{% elif result %}
+<div class="success-box" style="border: 1px solid green; padding: 1rem; border-radius: 4px;">
+    <h3>Import Successful</h3>
+    <ul style="list-style-type: none; padding: 0; margin: 0.5rem 0;">
+        <li><strong>Total Records:</strong> {{ result.total }}</li>
+        <li><strong>Successfully Ingested:</strong> {{ result.ingested }}</li>
+        <li><strong>Memories Created:</strong> {{ result.memories_created }}</li>
+        <li><strong>Unscoped Records:</strong> {{ result.unscoped }}</li>
+        <li><strong style="color: {{ 'red' if result.failed > 0 else 'green' }};">Failed:</strong> {{ result.failed }}</li>
+    </ul>
+
+    {% if result.failed > 0 %}
+        <h4 style="margin-top: 1rem;">Per-record Failures:</h4>
+        <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.9em; color: #d32f2f;">
+            {% for err in result.errors %}
+                <li>
+                    <strong>Take:</strong> {{ err.take_id }} <br>
+                    <strong>Type:</strong> {{ err.error_type }} <br>
+                    <strong>Detail:</strong> {{ err.detail }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endif %}

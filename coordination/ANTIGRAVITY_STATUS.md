@@ -1,42 +1,31 @@
 # Antigravity Status
 
 Owner: Antigravity
-Branch: `antigravity/september-10-verification-followup`
+Branch: `antigravity/remaining-surfaces`
 
 Antigravity updates this file after each pushed checkpoint. Codex does not edit progress below this line.
 
 ## Completed
 
-- **Frontend Verification Follow-up Complete**:
-  - PR #5 is already merged.
-  - Codex portability PR #6 is already merged.
-  - Clean dependency installation succeeded using a fresh `.venv`.
-  - Added a local `frontend/static/favicon.svg` and referenced it in `base.html`.
-  - Added `HTMX-LICENSE.txt` for the vendored HTMX.
-  - Fixed frontend form submission bug by replacing `onsubmit` with `hx-on::after-request="if (event.detail.successful) ..."` so the question clears only after HTMX completes successfully.
-  - Automated tests cover all five typed states.
-  - Added frontend regression coverage proving the proper HTMX form clear handler and local favicon logic.
+- **Remaining Interface Surfaces (September 11)**:
+  - Added global navigation for "Ask", "Timeline", and "Import & Eval" in `base.html`.
+  - Implemented the **Project Memory Timeline** view mapping exactly to `TimelineEntryRead` and `TimelineEvidenceRead`.
+  - Implemented the timeline evidence drawer and explicit **Revoke** interaction calling `DELETE /takes/{take_id}`.
+  - Implemented the **Import and Evaluation View** with a file upload form parsing JSONL and calling `import_takes`.
+  - Implemented a mocked Evaluation Dashboard to safely await the Codex evaluator deployment.
+  - Added tests covering Timeline rendering, Import form rendering, and Revoke control rendering.
 
 ## Verification
 
-- **Automated Tests**: The complete suite successfully runs with 31 passed, 0 failed, 0 skipped, and 2 known dependency warnings. No OpenAI key was required for automated verification.
-- **Browser/Preview Verification Confirmations**:
-  - Confirmed successful non-empty submission.
-  - Confirmed typed offline `SERVICE_ERROR` fallback renders successfully.
-  - Confirmed post-response question clearing only on success.
-  - Confirmed preserved project selection.
-  - Confirmed local assets loaded properly and `/favicon.svg` returns HTTP 200.
-  - Confirmed evidence-drawer behavior works properly for valid Take IDs, and safely handles missing evidence.
-  - Confirmed **zero** CDN requests, **zero** failed assets, and **zero** uncaught console errors.
+- **Automated Tests**: Passed all 5 frontend test cases associated with the new timeline and import surfaces.
+- **Browser Automation**: Confirmed successful loading of `/timeline` with project selector, and `/import-eval` with the correct file upload fields and evaluation metric hooks.
 
 ## Screenshots and Recordings
-- Main page with populated project selector: `C:\Users\Viraj\.gemini\antigravity\brain\8a533c38-74dd-4970-aa84-3e08e24ff940\main_page.png`
-- Rendered result (after submission): `C:\Users\Viraj\.gemini\antigravity\brain\8a533c38-74dd-4970-aa84-3e08e24ff940\rendered_result.png`
-- Screen Recording: `C:/Users/Viraj/.gemini/antigravity/brain/8a533c38-74dd-4970-aa84-3e08e24ff940/recording.webm`
+- Browser Automation Recording: `C:/Users/Viraj/.gemini/antigravity/brain/4a910cae-a999-4af5-94fc-1f83682ae544/recording.webm`
 
 ## Current work
 
-- Completed frontend verification follow-up. Awaiting user review and PR merge.
+- Completed frontend implementation for the remaining UI surfaces. Awaiting Codex's evaluation backend push for integration.
 
 ## Blockers
 
@@ -44,4 +33,5 @@ Antigravity updates this file after each pushed checkpoint. Codex does not edit 
 
 ## Request to Codex
 
-- The September 10 frontend verification follow-up is completed on `main` and verified fully locally. You can proceed to the September 11 feature milestones once this is merged!
+- I have completed the timeline and import/evaluation dashboard against your frozen contracts without modifying any backend models or policies.
+- Once you push the finalized evaluation endpoint logic to `main`, our surfaces will automatically wire up!
