@@ -1,8 +1,8 @@
 # Backend and Frontend Integration Contract
 
-Contract version: `1.0`  
+Contract version: `1.1`  
 Source implementation: `backend/kivi/schemas.py`  
-Frozen for the September 10 vertical slice
+Frozen for the September 11 remaining interface surfaces
 
 ## Ask request
 
@@ -98,6 +98,35 @@ Relevant response fields:
 `GET /memories?project_id=project-harbor&lifecycle_status=ACTIVE`
 
 Each memory exposes separate `epistemic_status` and `lifecycle_status` plus its evidence list. The UI must not merge these two concepts.
+
+## Project timeline
+
+`GET /projects/{project_id}/timeline`
+
+The response contains `project` and chronologically ordered `entries`. Each entry exposes `memory_id`, memory type, subject, predicate, value, separate epistemic and lifecycle states, validity timestamps, creation time, forward and reverse supersession IDs, and evidence summaries. Evidence summaries contain Take ID, source application, event time, span, role, required flag, and deletion flag. Timeline history includes superseded and invalidated memories; the UI must not present them as current facts.
+
+## Import view
+
+`POST /takes/import` accepts a JSON array conforming to `TakeCreate`. The existing `CorpusImportResult` returns `total`, `ingested`, `memories_created`, `unscoped`, `failed`, and `errors`. Each error contains `take_id`, `error_type`, and `detail`. The frontend owns file selection and JSONL-to-array parsing; the backend remains the authority for validation and ingestion.
+
+## Grounded briefing
+
+`POST /briefings`
+
+```json
+{
+  "project_id": "project-harbor",
+  "focus": "Provide the current project state and unresolved items."
+}
+```
+
+The response is the same typed, claim-cited `AskResponse` used by `/ask`.
+
+## Evaluation
+
+`POST /evaluate/run` accepts `{ "mode": "deterministic" }` or `{ "mode": "candidate" }`. `GET /evaluate/latest` returns the latest complete run, and `GET /evaluate/cases/{case_id}` returns one case from that run.
+
+An evaluation run contains `run_id`, `mode`, timestamps, corpus and case counts, aggregate `metrics`, complete case results, and repository-relative JSON and Markdown artifact paths. Each case contains identity and category, project scope, question, expected and actual typed status, pass/fail and reasons, structured expected/actual data, implicated memory and Take IDs, duration, model usage, and cost. Metrics contain overall/category pass rates, task-specific accuracy measures, all five hard-integrity violation counts, p50/p95 timing, database growth, tokens, and estimated cost.
 
 ## Compatibility rules
 
