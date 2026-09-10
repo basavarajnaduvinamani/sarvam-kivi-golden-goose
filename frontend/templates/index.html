@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block sidebar %}
+<div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+    <h2 class="font-semibold text-gray-800 mb-4">Evidence Drawer</h2>
+    <div id="evidence-drawer" class="text-sm text-gray-600">
+        Click on a citation in the answer to view the source evidence here.
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col h-full">
+    <!-- Chat Display Area -->
+    <div class="flex-grow p-6 overflow-y-auto" id="chat-container">
+        <div class="space-y-4" id="chat-history">
+            <!-- Initial greeting -->
+            <div class="bg-gray-100 rounded-lg p-4 max-w-[80%]">
+                <p class="text-gray-800">Hello. I am Kivi. You can ask me questions about your projects.</p>
+            </div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="htmx-indicator mt-4 flex items-center space-x-2 text-gray-500 hidden">
+            <svg class="animate-spin h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Retrieving evidence...</span>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg">
+        <form hx-post="/htmx/ask" 
+              hx-target="#chat-history" 
+              hx-swap="beforeend" 
+              hx-indicator="#loading-indicator"
+              class="flex flex-col space-y-3"
+              onsubmit="document.getElementById('question-input').value = ''">
+            
+            <div class="flex items-center space-x-2">
+                <label for="project_id" class="text-sm font-medium text-gray-700">Project Scope:</label>
+                <!-- In a real app this would be populated from /projects, hardcoding a default for vertical slice -->
+                <input type="text" id="project_id" name="project_id" placeholder="Optional project ID" class="text-sm border border-gray-300 rounded-md px-2 py-1">
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <input type="text" id="question-input" name="question" required
+                       placeholder="Ask Hey Kivi..." 
+                       class="flex-grow border border-gray-300 rounded-md px-4 py-2 focus:ring-green-500 focus:border-green-500">
+                <button type="submit" 
+                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+                    Ask
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .htmx-indicator {
+        display: none;
+    }
+    .htmx-request .htmx-indicator {
+        display: flex;
+    }
+    .htmx-request.htmx-indicator {
+        display: flex;
+    }
+</style>
+{% endblock %}
