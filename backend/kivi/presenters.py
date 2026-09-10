@@ -25,6 +25,7 @@ def present_memory(memory: Memory) -> MemoryRead:
                 span_start=link.span_start,
                 span_end=link.span_end,
                 evidence_role=link.evidence_role,
+                is_required=link.is_required,
                 sufficiency_contribution=link.sufficiency_contribution,
             )
             for link in memory.evidence_links

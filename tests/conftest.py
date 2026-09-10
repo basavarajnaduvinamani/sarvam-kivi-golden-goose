@@ -32,11 +32,12 @@ class FakeExtractor:
     def extract(self, take, project_name: str) -> ExtractionResult:
         text = take.formatted_text
         object_value = take.metadata.get("object_value", "Thursday at 4 PM")
+        memory_type = take.metadata.get("memory_type", MemoryType.DECISION)
         return ExtractionResult(
             decision=ExtractionDecision(
                 memories=[
                     MemoryCandidate(
-                        memory_type=MemoryType.DECISION,
+                        memory_type=memory_type,
                         subject=project_name,
                         predicate="release schedule",
                         object_value=object_value,

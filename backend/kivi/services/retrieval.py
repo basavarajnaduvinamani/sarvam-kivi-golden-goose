@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session, selectinload
 from ..enums import EpistemicStatus, LifecycleStatus, QueryStatus
 from ..models import Memory, MemoryEvidence, Project, QueryClaim, QueryRun
 from ..presenters import present_memory
-from ..providers import Embedder, GroundedAnswerer
+from ..providers import Embedder, GroundedAnswerer, ProviderUnavailable
 from ..schemas import AnswerClaim, AskRequest, AskResponse
 from ..serialization import blob_to_vector, cosine_similarity
 
@@ -56,7 +56,18 @@ def ask(
             started,
         )
 
-    query_embedding = embedder.embed(payload.question)
+    try:
+        query_embedding = embedder.embed(payload.question)
+    except ProviderUnavailable as exc:
+        return _record_non_answer(
+            session,
+            query_id,
+            payload,
+            QueryStatus.SERVICE_ERROR,
+            "Kivi could not access the configured retrieval service. Retry after checking the model configuration.",
+            started,
+            error_detail=str(exc),
+        )
     retrieval_started = perf_counter()
     statement = (
         select(Memory)
@@ -73,7 +84,9 @@ def ask(
     query_vector = query_embedding.vector
     for memory in candidates:
         valid_links = [link for link in memory.evidence_links if not link.take.is_deleted and link.take.embedding]
-        if not valid_links:
+        valid_take_ids = {link.take_id for link in valid_links}
+        required_take_ids = {link.take_id for link in memory.evidence_links if link.is_required}
+        if not valid_links or not required_take_ids <= valid_take_ids:
             continue
         semantic_score = max(
             cosine_similarity(blob_to_vector(link.take.embedding), np.asarray(query_vector, dtype=np.float32))
@@ -111,20 +124,58 @@ def ask(
         )
 
     readable = [present_memory(memory) for memory in selected]
-    grounded = answerer.answer(payload.question, readable)
+    try:
+        grounded = answerer.answer(payload.question, readable)
+    except ProviderUnavailable as exc:
+        return _record_non_answer(
+            session,
+            query_id,
+            payload,
+            QueryStatus.SERVICE_ERROR,
+            "Kivi retrieved evidence but could not generate a grounded response. Retry after checking the model configuration.",
+            started,
+            retrieval_latency_ms=retrieval_latency_ms,
+            candidate_ids=[memory.id for _, memory in scored],
+            selected_ids=[memory.id for memory in selected],
+            error_detail=str(exc),
+        )
     allowed_memories = {memory.id: memory for memory in readable}
     allowed_takes = {
         memory.id: {evidence.take_id for evidence in memory.evidence}
         for memory in readable
     }
-    for claim in grounded.claims:
-        if not claim.memory_ids:
-            raise ValueError("every answer claim must cite at least one memory")
-        if not set(claim.memory_ids) <= set(allowed_memories):
-            raise ValueError("answerer cited a memory outside the locked evidence package")
-        permitted_take_ids = set().union(*(allowed_takes[memory_id] for memory_id in claim.memory_ids))
-        if not claim.supporting_take_ids or not set(claim.supporting_take_ids) <= permitted_take_ids:
-            raise ValueError("answerer cited an invalid or missing supporting take")
+    try:
+        for claim in grounded.claims:
+            if not claim.memory_ids:
+                raise ValueError("every answer claim must cite at least one memory")
+            if not set(claim.memory_ids) <= set(allowed_memories):
+                raise ValueError("answerer cited a memory outside the locked evidence package")
+            permitted_take_ids = set().union(*(allowed_takes[memory_id] for memory_id in claim.memory_ids))
+            required_take_ids = set().union(
+                *(
+                    {evidence.take_id for evidence in allowed_memories[memory_id].evidence if evidence.is_required}
+                    for memory_id in claim.memory_ids
+                )
+            )
+            cited_take_ids = set(claim.supporting_take_ids)
+            if not cited_take_ids or not cited_take_ids <= permitted_take_ids:
+                raise ValueError("answerer cited an invalid or missing supporting take")
+            if not required_take_ids <= cited_take_ids:
+                raise ValueError("answerer omitted evidence required to support the complete claim")
+    except ValueError as exc:
+        return _record_non_answer(
+            session,
+            query_id,
+            payload,
+            QueryStatus.SERVICE_ERROR,
+            "Kivi rejected an answer because its citations did not fully support its claims.",
+            started,
+            retrieval_latency_ms=retrieval_latency_ms,
+            candidate_ids=[memory.id for _, memory in scored],
+            selected_ids=[memory.id for memory in selected],
+            model_name=grounded.usage.model_name,
+            error_detail=str(exc),
+        )
 
     end_to_end_latency_ms = int((perf_counter() - started) * 1000)
     run = QueryRun(
@@ -280,7 +331,9 @@ def _record_non_answer(
     *,
     retrieval_latency_ms: int = 0,
     candidate_ids: list[str] | None = None,
+    selected_ids: list[str] | None = None,
     model_name: str | None = None,
+    error_detail: str | None = None,
 ) -> AskResponse:
     elapsed = int((perf_counter() - started) * 1000)
     run = QueryRun(
@@ -290,8 +343,9 @@ def _record_non_answer(
         status=status,
         answer=None,
         decision_reason=reason,
+        error_detail=error_detail,
         candidate_memory_ids=candidate_ids or [],
-        selected_memory_ids=[],
+        selected_memory_ids=selected_ids or [],
         retrieval_latency_ms=retrieval_latency_ms,
         end_to_end_latency_ms=elapsed,
         model_name=model_name,
