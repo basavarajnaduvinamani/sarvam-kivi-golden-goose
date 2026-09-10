@@ -16,10 +16,12 @@ from .providers import Embedder, GroundedAnswerer, MemoryExtractor, ProviderUnav
 from .schemas import (
     AskRequest,
     AskResponse,
+    BriefingRequest,
     CorpusImportResult,
     DeleteResult,
     ProjectCreate,
     ProjectRead,
+    ProjectTimelineResponse,
     TakeCreate,
     TakeIngestResult,
     TakeRead,
@@ -31,6 +33,7 @@ from .services.deletion import DeletionError, delete_take, get_tombstone
 from .services.corpus_import import import_takes
 from .services.ingestion import IngestionError, ingest_take
 from .services.retrieval import ask
+from .services.timeline import TimelineError, get_project_timeline
 from .settings import get_settings
 
 
@@ -91,6 +94,13 @@ def create_app(
     @app.get("/projects", response_model=list[ProjectRead])
     def list_projects(session: Session = Depends(session_dependency)) -> list[Project]:
         return list(session.scalars(select(Project).order_by(Project.name)))
+
+    @app.get("/projects/{project_id}/timeline", response_model=ProjectTimelineResponse)
+    def project_timeline(project_id: str, session: Session = Depends(session_dependency)) -> ProjectTimelineResponse:
+        try:
+            return get_project_timeline(session, project_id)
+        except TimelineError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @app.post("/takes", response_model=TakeIngestResult, status_code=status.HTTP_201_CREATED)
     def create_take(payload: TakeCreate, session: Session = Depends(session_dependency)) -> TakeIngestResult:
@@ -157,6 +167,15 @@ def create_app(
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=502, detail=f"grounding validation failed: {exc}") from exc
+
+    @app.post("/briefings", response_model=AskResponse)
+    def create_briefing(payload: BriefingRequest, session: Session = Depends(session_dependency)) -> AskResponse:
+        return ask(
+            session,
+            AskRequest(project_id=payload.project_id, question=payload.focus),
+            bundle.embedder,
+            bundle.answerer,
+        )
 
     @app.delete("/takes/{take_id}", response_model=DeleteResult)
     def remove_take(take_id: str, session: Session = Depends(session_dependency)) -> DeleteResult:

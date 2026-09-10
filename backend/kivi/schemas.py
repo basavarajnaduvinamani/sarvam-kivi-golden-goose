@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -191,4 +191,120 @@ class DeleteResult(BaseModel):
     logically_deleted: bool
     invalidated_memory_ids: list[str]
     tombstone: TombstoneRead
+
+
+class BriefingRequest(BaseModel):
+    project_id: str = Field(min_length=1, max_length=100)
+    focus: str = Field(
+        default="Provide the current project state, including decisions, constraints, commitments, and unresolved items.",
+        min_length=1,
+    )
+
+
+class TimelineEvidenceRead(BaseModel):
+    take_id: str
+    source_application: str
+    event_ts: datetime
+    span_start: int | None
+    span_end: int | None
+    evidence_role: str
+    is_required: bool
+    is_deleted: bool
+
+
+class TimelineEntryRead(BaseModel):
+    memory_id: str
+    memory_type: MemoryType
+    subject: str
+    predicate: str
+    object_value: str
+    epistemic_status: EpistemicStatus
+    lifecycle_status: LifecycleStatus
+    valid_from: datetime | None
+    valid_to: datetime | None
+    created_at: datetime
+    supersedes_memory_id: str | None
+    superseded_by_memory_ids: list[str] = Field(default_factory=list)
+    evidence: list[TimelineEvidenceRead]
+
+
+class ProjectTimelineResponse(BaseModel):
+    project: ProjectRead
+    entries: list[TimelineEntryRead]
+
+
+class EvaluationRunRequest(BaseModel):
+    mode: Literal["deterministic", "candidate"] = "deterministic"
+
+
+class EvaluationCaseResultRead(BaseModel):
+    case_id: str
+    category: str
+    description: str
+    project_id: str | None
+    question: str
+    expected_status: QueryStatus
+    actual_status: QueryStatus
+    passed: bool
+    failure_reasons: list[str] = Field(default_factory=list)
+    expected: dict[str, Any] = Field(default_factory=dict)
+    actual: dict[str, Any] = Field(default_factory=dict)
+    relevant_memory_ids: list[str] = Field(default_factory=list)
+    supporting_take_ids: list[str] = Field(default_factory=list)
+    duration_ms: int = Field(ge=0)
+    input_tokens: int | None = Field(default=None, ge=0)
+    output_tokens: int | None = Field(default=None, ge=0)
+    estimated_cost_usd: float | None = Field(default=None, ge=0)
+
+
+class EvaluationCategoryMetrics(BaseModel):
+    total: int = Field(ge=0)
+    passed: int = Field(ge=0)
+    failed: int = Field(ge=0)
+    pass_rate: float = Field(ge=0, le=1)
+
+
+class EvaluationMetricsRead(BaseModel):
+    total_cases: int = Field(ge=0)
+    passed: int = Field(ge=0)
+    failed: int = Field(ge=0)
+    pass_rate: float = Field(ge=0, le=1)
+    answer_correctness: float = Field(ge=0, le=1)
+    abstention_precision: float = Field(ge=0, le=1)
+    abstention_recall: float = Field(ge=0, le=1)
+    conflict_detection_accuracy: float = Field(ge=0, le=1)
+    project_scope_accuracy: float = Field(ge=0, le=1)
+    decision_status_accuracy: float = Field(ge=0, le=1)
+    temporal_correction_accuracy: float = Field(ge=0, le=1)
+    provenance_coverage: float = Field(ge=0, le=1)
+    deletion_integrity: float = Field(ge=0, le=1)
+    cross_project_leakage_count: int = Field(ge=0)
+    deleted_memory_resurrection_count: int = Field(ge=0)
+    invalid_citation_count: int = Field(ge=0)
+    rejected_proposal_promotion_count: int = Field(ge=0)
+    fabricated_answer_count: int = Field(ge=0)
+    retrieval_latency_p50_ms: float = Field(ge=0)
+    retrieval_latency_p95_ms: float = Field(ge=0)
+    end_to_end_latency_p50_ms: float = Field(ge=0)
+    end_to_end_latency_p95_ms: float = Field(ge=0)
+    database_bytes_before: int = Field(ge=0)
+    database_bytes_after: int = Field(ge=0)
+    database_growth_bytes: int
+    input_tokens: int = Field(ge=0)
+    output_tokens: int = Field(ge=0)
+    estimated_cost_usd: float | None = Field(default=None, ge=0)
+    by_category: dict[str, EvaluationCategoryMetrics] = Field(default_factory=dict)
+
+
+class EvaluationRunRead(BaseModel):
+    run_id: str
+    mode: Literal["deterministic", "candidate"]
+    started_at: datetime
+    completed_at: datetime
+    corpus_record_count: int = Field(ge=0)
+    case_count: int = Field(ge=0)
+    metrics: EvaluationMetricsRead
+    cases: list[EvaluationCaseResultRead]
+    results_json_path: str
+    report_markdown_path: str
 
