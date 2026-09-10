@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/kivi/corpus.schema.json",
+  "title": "Kivi transcript-like corpus record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "take_id",
+    "raw_asr",
+    "formatted_text",
+    "source_application",
+    "event_ts",
+    "metadata"
+  ],
+  "properties": {
+    "take_id": {"type": "string", "minLength": 1, "maxLength": 100},
+    "raw_asr": {"type": "string", "minLength": 1},
+    "formatted_text": {"type": "string", "minLength": 1},
+    "source_application": {"type": "string", "minLength": 1, "maxLength": 100},
+    "event_ts": {"type": "string", "format": "date-time"},
+    "project_id": {"type": ["string", "null"], "maxLength": 100},
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "project_id": {"type": ["string", "null"], "maxLength": 100}
+      }
+    }
+  }
+}
+
