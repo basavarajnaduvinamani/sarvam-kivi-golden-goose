@@ -1,18 +1,25 @@
 from logging.config import fileConfig
+import os
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from kivi.db import Base
 from kivi import models  # noqa: F401
-from kivi.settings import get_settings
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+if database_url := os.getenv("KIVI_DATABASE_URL"):
+    config.set_main_option("sqlalchemy.url", database_url)
 target_metadata = Base.metadata
+
+
+def include_name(name: str | None, type_: str, _parent_names) -> bool:
+    # FTS5 virtual tables and their shadow tables are managed by the explicit
+    # 7b4e912ad1f0 migration rather than SQLAlchemy metadata.
+    return not (type_ == "table" and name is not None and name.startswith("memory_fts"))
 
 
 def run_migrations_offline() -> None:
@@ -21,6 +28,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_name=include_name,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -33,7 +41,7 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata, include_name=include_name)
         with context.begin_transaction():
             context.run_migrations()
 

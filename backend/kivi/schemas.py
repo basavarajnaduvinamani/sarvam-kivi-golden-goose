@@ -127,6 +127,21 @@ class TakeIngestResult(BaseModel):
     ignored_reason: str | None = None
 
 
+class CorpusImportError(BaseModel):
+    take_id: str
+    error_type: str
+    detail: str
+
+
+class CorpusImportResult(BaseModel):
+    total: int = Field(ge=0)
+    ingested: int = Field(ge=0)
+    memories_created: int = Field(ge=0)
+    unscoped: int = Field(ge=0)
+    failed: int = Field(ge=0)
+    errors: list[CorpusImportError] = Field(default_factory=list)
+
+
 class AskRequest(BaseModel):
     project_id: str | None = Field(default=None, max_length=100)
     question: str = Field(min_length=1)

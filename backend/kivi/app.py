@@ -4,24 +4,31 @@ from dataclasses import dataclass
 from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from .db import get_session
-from .models import Project
+from .enums import LifecycleStatus
+from .models import Memory, Project, Take
 from .openai_provider import OpenAIProvider
 from .providers import Embedder, GroundedAnswerer, MemoryExtractor, ProviderUnavailable
 from .schemas import (
     AskRequest,
     AskResponse,
+    CorpusImportResult,
     DeleteResult,
     ProjectCreate,
     ProjectRead,
     TakeCreate,
     TakeIngestResult,
+    TakeRead,
     TombstoneRead,
 )
+from .presenters import present_memory
+from .schemas import MemoryRead
 from .services.deletion import DeletionError, delete_take, get_tombstone
+from .services.corpus_import import import_takes
 from .services.ingestion import IngestionError, ingest_take
 from .services.retrieval import ask
 from .settings import get_settings
@@ -80,6 +87,10 @@ def create_app(
         session.refresh(project)
         return project
 
+    @app.get("/projects", response_model=list[ProjectRead])
+    def list_projects(session: Session = Depends(session_dependency)) -> list[Project]:
+        return list(session.scalars(select(Project).order_by(Project.name)))
+
     @app.post("/takes", response_model=TakeIngestResult, status_code=status.HTTP_201_CREATED)
     def create_take(payload: TakeCreate, session: Session = Depends(session_dependency)) -> TakeIngestResult:
         try:
@@ -88,6 +99,54 @@ def create_app(
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         except ProviderUnavailable as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    @app.post("/takes/import", response_model=CorpusImportResult)
+    def import_corpus(records: list[TakeCreate], session: Session = Depends(session_dependency)) -> CorpusImportResult:
+        return import_takes(session, records, bundle.extractor, bundle.embedder)
+
+    @app.get("/takes", response_model=list[TakeRead])
+    def list_takes(
+        project_id: str | None = None,
+        include_deleted: bool = False,
+        session: Session = Depends(session_dependency),
+    ) -> list[Take]:
+        statement = select(Take).order_by(Take.event_ts.desc())
+        if project_id is not None:
+            statement = statement.where(Take.project_id == project_id)
+        if not include_deleted:
+            statement = statement.where(Take.is_deleted.is_(False))
+        return list(session.scalars(statement))
+
+    @app.get("/takes/{take_id}", response_model=TakeRead)
+    def get_take(take_id: str, session: Session = Depends(session_dependency)) -> Take:
+        take = session.get(Take, take_id)
+        if take is None:
+            raise HTTPException(status_code=404, detail="take not found")
+        return take
+
+    @app.get("/memories", response_model=list[MemoryRead])
+    def list_memories(
+        project_id: str | None = None,
+        lifecycle_status: LifecycleStatus | None = None,
+        session: Session = Depends(session_dependency),
+    ) -> list[MemoryRead]:
+        statement = select(Memory).options(selectinload(Memory.evidence_links)).order_by(Memory.created_at.desc())
+        if project_id is not None:
+            statement = statement.where(Memory.project_id == project_id)
+        if lifecycle_status is not None:
+            statement = statement.where(Memory.lifecycle_status == lifecycle_status)
+        return [present_memory(memory) for memory in session.scalars(statement)]
+
+    @app.get("/memories/{memory_id}", response_model=MemoryRead)
+    def get_memory(memory_id: str, session: Session = Depends(session_dependency)) -> MemoryRead:
+        memory = session.scalar(
+            select(Memory)
+            .where(Memory.id == memory_id)
+            .options(selectinload(Memory.evidence_links))
+        )
+        if memory is None:
+            raise HTTPException(status_code=404, detail="memory not found")
+        return present_memory(memory)
 
     @app.post("/ask", response_model=AskResponse)
     def ask_kivi(payload: AskRequest, session: Session = Depends(session_dependency)) -> AskResponse:

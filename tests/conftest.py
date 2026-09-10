@@ -31,6 +31,7 @@ class FakeEmbedder:
 class FakeExtractor:
     def extract(self, take, project_name: str) -> ExtractionResult:
         text = take.formatted_text
+        object_value = take.metadata.get("object_value", "Thursday at 4 PM")
         return ExtractionResult(
             decision=ExtractionDecision(
                 memories=[
@@ -38,9 +39,10 @@ class FakeExtractor:
                         memory_type=MemoryType.DECISION,
                         subject=project_name,
                         predicate="release schedule",
-                        object_value="Thursday at 4 PM",
+                        object_value=object_value,
                         epistemic_status=EpistemicStatus.APPROVED,
                         confidence=0.99,
+                        supersedes_memory_id=take.metadata.get("supersedes_memory_id"),
                         evidence=[EvidenceCandidate(span_start=0, span_end=len(text))],
                     )
                 ]
