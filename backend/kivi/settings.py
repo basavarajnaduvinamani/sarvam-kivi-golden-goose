@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-5.6-luna"
     embedding_model: str = "text-embedding-3-small"
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
+    llm_input_cost_per_million: float | None = None
+    llm_output_cost_per_million: float | None = None
+    embedding_cost_per_million: float | None = None
 
     def ensure_local_directories(self) -> None:
         if not self.database_url.startswith("sqlite:///"):

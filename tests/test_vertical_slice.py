@@ -64,3 +64,43 @@ def test_unknown_project_cannot_ingest_memory(client):
     assert response.status_code == 422
     assert "unknown project_id" in response.json()["detail"]
 
+
+def test_deleted_take_is_purged_and_cannot_support_future_answers(client):
+    client.post(
+        "/projects",
+        json={"id": "project-harbor", "name": "Project Harbor", "aliases": []},
+    )
+    text = "Project Harbor's confirmed release is Thursday at 4 PM."
+    client.post(
+        "/takes",
+        json={
+            "take_id": "take_delete_me",
+            "project_id": "project-harbor",
+            "raw_asr": text,
+            "formatted_text": text,
+            "source_application": "Notepad",
+            "event_ts": datetime.now(timezone.utc).isoformat(),
+            "metadata": {"temporary": True},
+        },
+    )
+
+    deleted = client.delete("/takes/take_delete_me")
+    assert deleted.status_code == 200, deleted.text
+    deletion = deleted.json()
+    assert deletion["logically_deleted"] is True
+    assert deletion["tombstone"]["purge_status"] == "purged"
+    assert deletion["tombstone"]["verified_at"] is not None
+    assert len(deletion["invalidated_memory_ids"]) == 1
+
+    status = client.get("/deletions/take_delete_me")
+    assert status.status_code == 200
+    assert status.json()["purge_status"] == "purged"
+
+    answer = client.post(
+        "/ask",
+        json={"project_id": "project-harbor", "question": "When is the Harbor release?"},
+    )
+    assert answer.status_code == 200
+    assert answer.json()["status"] == "NO_EVIDENCE"
+    assert answer.json()["supporting_take_ids"] == []
+

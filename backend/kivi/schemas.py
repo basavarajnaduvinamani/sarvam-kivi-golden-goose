@@ -162,3 +162,10 @@ class TombstoneRead(BaseModel):
     verified_at: datetime | None
     failure_detail: str | None
 
+
+class DeleteResult(BaseModel):
+    take_id: str
+    logically_deleted: bool
+    invalidated_memory_ids: list[str]
+    tombstone: TombstoneRead
+

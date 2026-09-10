@@ -9,10 +9,22 @@ from sqlalchemy.orm import Session
 
 from .db import get_session
 from .models import Project
+from .openai_provider import OpenAIProvider
 from .providers import Embedder, GroundedAnswerer, MemoryExtractor, ProviderUnavailable
-from .schemas import AskRequest, AskResponse, ProjectCreate, ProjectRead, TakeCreate, TakeIngestResult
+from .schemas import (
+    AskRequest,
+    AskResponse,
+    DeleteResult,
+    ProjectCreate,
+    ProjectRead,
+    TakeCreate,
+    TakeIngestResult,
+    TombstoneRead,
+)
+from .services.deletion import DeletionError, delete_take, get_tombstone
 from .services.ingestion import IngestionError, ingest_take
 from .services.retrieval import ask
+from .settings import get_settings
 
 
 class UnavailableProvider:
@@ -36,15 +48,20 @@ class ProviderBundle:
     answerer: GroundedAnswerer
 
 
+def default_provider_bundle() -> ProviderBundle:
+    settings = get_settings()
+    if settings.model_provider != "openai" or not settings.openai_api_key:
+        unavailable = UnavailableProvider()
+        return ProviderBundle(extractor=unavailable, embedder=unavailable, answerer=unavailable)
+    provider = OpenAIProvider(settings)
+    return ProviderBundle(extractor=provider, embedder=provider, answerer=provider)
+
+
 def create_app(
     providers: ProviderBundle | None = None,
     session_dependency: Any = get_session,
 ) -> FastAPI:
-    bundle = providers or ProviderBundle(
-        extractor=UnavailableProvider(),
-        embedder=UnavailableProvider(),
-        answerer=UnavailableProvider(),
-    )
+    bundle = providers or default_provider_bundle()
     app = FastAPI(title="Kivi Semantic Memory", version="0.1.0")
 
     @app.get("/health")
@@ -80,6 +97,20 @@ def create_app(
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=502, detail=f"grounding validation failed: {exc}") from exc
+
+    @app.delete("/takes/{take_id}", response_model=DeleteResult)
+    def remove_take(take_id: str, session: Session = Depends(session_dependency)) -> DeleteResult:
+        try:
+            return delete_take(session, take_id)
+        except DeletionError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/deletions/{take_id}", response_model=TombstoneRead)
+    def deletion_status(take_id: str, session: Session = Depends(session_dependency)) -> TombstoneRead:
+        try:
+            return get_tombstone(session, take_id)
+        except DeletionError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     return app
 
