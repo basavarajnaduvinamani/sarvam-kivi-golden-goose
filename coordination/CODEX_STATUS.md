@@ -1,70 +1,45 @@
 # Codex Status
 
 Last updated: September 10, 2026  
-Branch: `codex/backend-core`  
-Ready commit: `f76ed94`  
-September 10 state: `READY_FOR_FRONTEND_INTEGRATION`
+Branch: `codex/september-11-backend`  
+Ready code commit: `8612872`  
+September 11 state: `READY_FOR_INTEGRATION`
 
 ## Completed
 
-- FastAPI application scaffold
-- SQLAlchemy semantic-memory models
-- Alembic initial schema and FTS5 migration
-- Pydantic request, response, extraction, and corpus contracts
-- Exactly specified JSON corpus schema
-- OpenAI structured extraction, embedding, and grounded-answer adapter
-- Project-scoped ingestion and hybrid retrieval
-- Deterministic memory IDs
-- Unscoped-take preservation without memory activation
-- Explicit correction and supersession validation
-- `NO_EVIDENCE`, `NEEDS_CLARIFICATION`, and `CONFLICTING_EVIDENCE` paths
-- Per-claim memory and Take-ID citation validation
-- Durable tombstone, purge, dependent-memory invalidation, and verification
-- Project, take, memory, deletion, and bulk-import inspection APIs
+- Added explicit required-evidence semantics to each memory-evidence link.
+- Enforced complete per-claim citations across every required supporting Take ID.
+- Excluded memories when any required take is missing or deleted.
+- Added deterministic correction linking only when exactly one active subject/predicate match exists.
+- Returned and persisted typed `SERVICE_ERROR` query runs for embedding, answer, and citation-validation failures.
+- Kept private provider diagnostics internal while returning safe reviewer-visible error wording.
+- Added a fixed-seed generator and committed exactly 500 transcript-like records, gold labels, a 20-project registry, and a hash manifest.
+- Added reviewer CLI commands for serve, migrate, guarded reset, FTS rebuild, project import, corpus validation/import, and state inspection.
+- Added an active-and-sufficient-evidence FTS rebuild policy.
+- Proved tombstone persistence, content purge, dependent-memory invalidation, and exclusion after process restart and index rebuild.
 
 ## Verification
 
-- Pytest: 10 passing tests
-- Fresh Alembic upgrade: passed
-- Alembic schema-drift check: passed
-- FTS5 insert/update/delete trigger test: passed
-- Python compilation: passed
-- Part One files: unchanged
-
-## Current API routes
-
-- `GET /health`
-- `GET /projects`
-- `POST /projects`
-- `GET /takes`
-- `POST /takes`
-- `POST /takes/import`
-- `GET /takes/{take_id}`
-- `DELETE /takes/{take_id}`
-- `GET /deletions/{take_id}`
-- `GET /memories`
-- `GET /memories/{memory_id}`
-- `POST /ask`
-
-## Waiting for
-
-Antigravity integration of the September 10 browser slice against the exact `/ask` response contract.
+- Pytest: 19 passing tests.
+- Deterministic corpus check: 500 records and all committed hashes match.
+- Corpus CLI validation: 500 records accepted.
+- Fresh Alembic upgrade through `d164b8a1c321`: passed.
+- Alembic schema-drift check: no new operations detected.
+- Reviewer CLI migrate, rebuild-index, and inspect commands: passed on a fresh SQLite database.
+- Python compilation and `git diff --check`: passed.
+- Part One files: unchanged.
 
 ## Request to Antigravity
 
-1. Commit the current Antigravity-owned frontend scaffold.
-2. Fetch `origin/codex/backend-core`.
-3. Integrate Codex commit `f76ed94` into `antigravity/frontend-corpus`.
-4. Implement the Hey Kivi form and typed result component against `INTEGRATION_CONTRACT.md`.
-5. Render `claims[].supporting_take_ids` as clickable evidence controls.
-6. Display every typed status distinctly.
-7. Run the combined application and report the browser verification evidence in `ANTIGRAVITY_STATUS.md`.
+1. Finish and push the current frontend corrective checkpoint from the Antigravity-owned branch.
+2. Fetch `codex/september-11-backend` and review commit `8612872`.
+3. Integrate the branch only after the frontend checkpoint is clean, then run the complete combined browser and CLI flow.
+4. Verify that all five statuses still render correctly and that evidence controls tolerate the added `is_required` field.
+5. Record the integrated commit and browser evidence in `coordination/ANTIGRAVITY_STATUS.md`.
 
-## Next Codex work
+## Next Codex work — September 12 only
 
-- CLI migration/import/serve/reset path
-- Restart and index-rebuild deletion tests
-- Query `SERVICE_ERROR` persistence
-- Stronger per-claim sufficiency policy
-- Evaluation schema and harness
-
+- Build the deterministic adversarial evaluation harness and metrics report.
+- Complete `RUN.md`, architecture, design-decision, and evaluation documentation.
+- Perform clean-clone reviewer rehearsal and final submission audit.
+- No September 12 work begins until the user resumes the next bounded milestone.
