@@ -58,6 +58,7 @@ class EvidenceCandidate(BaseModel):
     span_start: int | None = Field(default=None, ge=0)
     span_end: int | None = Field(default=None, ge=0)
     role: str = "supporting"
+    required: bool = True
     sufficiency_contribution: str | None = None
 
     @model_validator(mode="after")
@@ -81,6 +82,12 @@ class MemoryCandidate(BaseModel):
     supersedes_memory_id: str | None = None
     evidence: list[EvidenceCandidate] = Field(min_length=1)
 
+    @model_validator(mode="after")
+    def require_sufficient_evidence(self) -> MemoryCandidate:
+        if not any(item.required for item in self.evidence):
+            raise ValueError("every memory requires at least one required evidence span")
+        return self
+
 
 class ExtractionDecision(BaseModel):
     schema_version: str = "1.0"
@@ -99,6 +106,7 @@ class MemoryEvidenceRead(BaseModel):
     span_start: int | None
     span_end: int | None
     evidence_role: str
+    is_required: bool
     sufficiency_contribution: str | None
 
 

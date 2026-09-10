@@ -90,6 +90,7 @@ class MemoryEvidence(Base):
     span_start: Mapped[int | None] = mapped_column(Integer)
     span_end: Mapped[int | None] = mapped_column(Integer)
     evidence_role: Mapped[str] = mapped_column(String(50), default="supporting", nullable=False)
+    is_required: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     sufficiency_contribution: Mapped[str | None] = mapped_column(Text)
 
     memory: Mapped[Memory] = relationship(back_populates="evidence_links")
@@ -118,6 +119,7 @@ class QueryRun(Base):
     status: Mapped[QueryStatus] = mapped_column(String(40), nullable=False)
     answer: Mapped[str | None] = mapped_column(Text)
     decision_reason: Mapped[str] = mapped_column(Text, nullable=False)
+    error_detail: Mapped[str | None] = mapped_column(Text)
     candidate_memory_ids: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     selected_memory_ids: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     retrieval_latency_ms: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

@@ -175,6 +175,42 @@ def test_explicit_correction_supersedes_matching_active_memory(client):
     assert answer["supporting_take_ids"] == ["take_correction"]
 
 
+def test_correction_type_links_exactly_one_matching_active_memory(client):
+    client.post(
+        "/projects",
+        json={"id": "project-harbor", "name": "Project Harbor", "aliases": []},
+    )
+    initial_text = "Project Harbor's release is approved for Tuesday at 9 AM."
+    initial = client.post(
+        "/takes",
+        json={
+            "take_id": "take_auto_old",
+            "project_id": "project-harbor",
+            "raw_asr": initial_text,
+            "formatted_text": initial_text,
+            "source_application": "Notepad",
+            "event_ts": datetime.now(timezone.utc).isoformat(),
+            "metadata": {"object_value": "Tuesday at 9 AM"},
+        },
+    ).json()
+    old_memory_id = initial["memories"][0]["id"]
+    correction_text = "Correction: Project Harbor's release is Thursday at 4 PM."
+    correction = client.post(
+        "/takes",
+        json={
+            "take_id": "take_auto_new",
+            "project_id": "project-harbor",
+            "raw_asr": correction_text,
+            "formatted_text": correction_text,
+            "source_application": "ChatGPT",
+            "event_ts": datetime.now(timezone.utc).isoformat(),
+            "metadata": {"object_value": "Thursday at 4 PM", "memory_type": "correction"},
+        },
+    )
+    assert correction.status_code == 201, correction.text
+    assert correction.json()["memories"][0]["supersedes_memory_id"] == old_memory_id
+
+
 def test_unresolved_approved_values_return_conflict(client):
     client.post(
         "/projects",

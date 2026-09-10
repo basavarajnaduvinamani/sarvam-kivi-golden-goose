@@ -61,8 +61,23 @@ def ingest_take(
         for evidence in candidate.evidence:
             if evidence.span_end is not None and evidence.span_end > text_length:
                 raise IngestionError("evidence span exceeds formatted_text length")
-        if candidate.supersedes_memory_id:
-            superseded = session.get(Memory, candidate.supersedes_memory_id)
+        supersedes_memory_id = candidate.supersedes_memory_id
+        if supersedes_memory_id is None and candidate.memory_type.value == "correction":
+            matching_active = list(
+                session.scalars(
+                    select(Memory).where(
+                        Memory.project_id == payload.project_id,
+                        Memory.lifecycle_status == LifecycleStatus.ACTIVE,
+                        Memory.subject == candidate.subject,
+                        Memory.predicate == candidate.predicate,
+                    )
+                )
+            )
+            if len(matching_active) == 1:
+                supersedes_memory_id = matching_active[0].id
+
+        if supersedes_memory_id:
+            superseded = session.get(Memory, supersedes_memory_id)
             if superseded is None:
                 raise IngestionError(f"unknown supersedes_memory_id: {candidate.supersedes_memory_id}")
             if superseded.project_id != payload.project_id:
@@ -92,7 +107,7 @@ def ingest_take(
             extraction_method="model_structured_output",
             extraction_model=extraction_result.usage.model_name,
             schema_version=extraction_result.decision.schema_version,
-            supersedes_memory_id=candidate.supersedes_memory_id,
+            supersedes_memory_id=supersedes_memory_id,
         )
         for evidence in candidate.evidence:
             memory.evidence_links.append(
@@ -101,6 +116,7 @@ def ingest_take(
                     span_start=evidence.span_start,
                     span_end=evidence.span_end,
                     evidence_role=evidence.role,
+                    is_required=evidence.required,
                     sufficiency_contribution=evidence.sufficiency_contribution,
                 )
             )
