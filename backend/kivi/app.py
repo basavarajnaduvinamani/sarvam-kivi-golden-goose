@@ -70,6 +70,7 @@ def create_app(
 ) -> FastAPI:
     bundle = providers or default_provider_bundle()
     app = FastAPI(title="Kivi Semantic Memory", version="0.1.0")
+    app.state.bundle = bundle
 
     @app.get("/health")
     def health() -> dict[str, str]:

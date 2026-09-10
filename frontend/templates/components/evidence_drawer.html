@@ -1,50 +1,50 @@
 {% if take %}
-<div class="space-y-4 animate-fade-in">
+<div style="display: flex; flex-direction: column; gap: 1rem;">
     <div>
-        <h3 class="text-sm font-semibold text-gray-800 flex items-center justify-between">
+        <h3 style="font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between; margin: 0;">
             Take Details
-            <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">{{ take.id }}</span>
+            <span style="padding: 0.25rem 0.5rem; background: var(--gray-bg); border-radius: 0.25rem; font-size: 0.75rem;">{{ take.id }}</span>
         </h3>
     </div>
 
-    <div class="space-y-2">
-        <div class="bg-gray-50 p-3 rounded border border-gray-200">
-            <span class="text-xs font-medium text-gray-500 uppercase">Project Scope</span>
-            <p class="text-sm text-gray-800 font-medium">{{ take.project_id or "Unresolved" }}</p>
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <div style="background: var(--gray-bg); padding: 0.75rem; border-radius: 0.25rem; border: 1px solid var(--gray-border);">
+            <span style="font-size: 0.75rem; font-weight: 500; text-transform: uppercase;">Project Scope</span>
+            <p style="font-size: 0.875rem; font-weight: 500; margin: 0.25rem 0 0 0;">{{ take.project_id or "Unresolved" }}</p>
         </div>
 
-        <div class="bg-blue-50 p-3 rounded border border-blue-100">
-            <span class="text-xs font-medium text-blue-600 uppercase">Formatted Output</span>
-            <p class="text-sm text-gray-900 mt-1">{{ take.formatted_text }}</p>
+        <div style="background: var(--blue-bg); padding: 0.75rem; border-radius: 0.25rem; border: 1px solid var(--blue-border);">
+            <span style="font-size: 0.75rem; font-weight: 500; text-transform: uppercase; color: var(--blue);">Formatted Output</span>
+            <p style="font-size: 0.875rem; margin: 0.25rem 0 0 0; color: #1e3a8a;">{{ take.formatted_text }}</p>
         </div>
 
-        <div class="bg-gray-50 p-3 rounded border border-gray-200">
-            <span class="text-xs font-medium text-gray-500 uppercase">Raw ASR</span>
-            <p class="text-sm text-gray-600 mt-1 italic">"{{ take.raw_asr }}"</p>
+        <div style="background: var(--gray-bg); padding: 0.75rem; border-radius: 0.25rem; border: 1px solid var(--gray-border);">
+            <span style="font-size: 0.75rem; font-weight: 500; text-transform: uppercase;">Raw ASR</span>
+            <p style="font-size: 0.875rem; font-style: italic; margin: 0.25rem 0 0 0;">"{{ take.raw_asr }}"</p>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-2 text-xs text-gray-500 bg-gray-50 p-3 rounded border border-gray-200">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem; background: var(--gray-bg); padding: 0.75rem; border-radius: 0.25rem; border: 1px solid var(--gray-border);">
         <div>
-            <span class="block font-medium">Source</span>
-            <span class="text-gray-800">{{ take.source_application }}</span>
+            <span style="display: block; font-weight: 500;">Source</span>
+            <span>{{ take.source_application }}</span>
         </div>
         <div>
-            <span class="block font-medium">Time</span>
-            <span class="text-gray-800">{{ take.event_ts.strftime('%Y-%m-%d %H:%M') if take.event_ts else 'N/A' }}</span>
+            <span style="display: block; font-weight: 500;">Time</span>
+            <span>{{ take.event_ts.strftime('%Y-%m-%d %H:%M') if take.event_ts else 'N/A' }}</span>
         </div>
-        <div class="col-span-2">
-            <span class="block font-medium">Status</span>
+        <div style="grid-column: span 2;">
+            <span style="display: block; font-weight: 500;">Status</span>
             {% if take.is_deleted %}
-            <span class="text-red-600 font-semibold">TOMBSTONED</span>
+            <span style="color: var(--red); font-weight: 600;">TOMBSTONED</span>
             {% else %}
-            <span class="text-green-600 font-semibold">ACTIVE</span>
+            <span style="color: var(--primary); font-weight: 600;">ACTIVE</span>
             {% endif %}
         </div>
     </div>
 </div>
 {% else %}
-<div class="text-sm text-red-600">
+<div style="font-size: 0.875rem; color: var(--red);">
     Evidence not found.
 </div>
 {% endif %}
