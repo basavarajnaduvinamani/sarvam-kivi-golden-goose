@@ -30,7 +30,7 @@
               hx-target="#chat-history" 
               hx-swap="beforeend" 
               hx-indicator="#loading-indicator"
-              onsubmit="document.getElementById('question-input').value = ''">
+              hx-on::after-request="if (event.detail.successful) document.getElementById('question-input').value = ''">
             
             <div class="form-row">
                 <label for="project_id" class="form-label">Project Scope:</label>
