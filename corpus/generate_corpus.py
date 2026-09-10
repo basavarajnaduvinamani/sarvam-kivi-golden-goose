@@ -185,6 +185,12 @@ def jsonl(items: list[dict[str, Any]]) -> str:
     return "".join(json.dumps(item, ensure_ascii=False, sort_keys=True) + "\n" for item in items)
 
 
+def canonical_text_sha256(content: str) -> str:
+    """Hash UTF-8 text after normalizing platform line endings to canonical LF."""
+    canonical_content = content.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(canonical_content.encode("utf-8")).hexdigest()
+
+
 def generate_outputs() -> dict[str, str]:
     records, labels, projects = build()
     corpus_text = jsonl(records)
@@ -197,10 +203,11 @@ def generate_outputs() -> dict[str, str]:
         "record_count": len(records),
         "project_count": len(projects),
         "records_per_project": 25,
+        "hash_contract": "UTF-8 text with line endings normalized to LF",
         "category_counts": dict(sorted(category_counts.items())),
-        "corpus_sha256": hashlib.sha256(corpus_text.encode("utf-8")).hexdigest(),
-        "gold_labels_sha256": hashlib.sha256(labels_text.encode("utf-8")).hexdigest(),
-        "projects_sha256": hashlib.sha256(projects_text.encode("utf-8")).hexdigest(),
+        "corpus_sha256": canonical_text_sha256(corpus_text),
+        "gold_labels_sha256": canonical_text_sha256(labels_text),
+        "projects_sha256": canonical_text_sha256(projects_text),
     }
     return {
         "kivi_500.jsonl": corpus_text,
@@ -229,4 +236,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
