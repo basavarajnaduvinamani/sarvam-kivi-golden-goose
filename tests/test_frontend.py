@@ -106,7 +106,7 @@ def test_ask_answered(mock_ask, mock_session):
     test_app = create_test_app()
     test_app.dependency_overrides[get_session] = override_get_session(mock_session)
     client = TestClient(test_app)
-    
+
     response = client.post("/htmx/ask", data={"question": "Hello?", "project_id": "test-project"})
     assert response.status_code == 200
     html = response.text
@@ -131,7 +131,7 @@ def test_ask_no_evidence(mock_ask, mock_session):
     test_app = create_test_app()
     test_app.dependency_overrides[get_session] = override_get_session(mock_session)
     client = TestClient(test_app)
-    
+
     response = client.post("/htmx/ask", data={"question": "Hello?"})
     assert response.status_code == 200
     assert "NO EVIDENCE" in response.text
@@ -154,7 +154,7 @@ def test_ask_needs_clarification(mock_ask, mock_session):
     test_app = create_test_app()
     test_app.dependency_overrides[get_session] = override_get_session(mock_session)
     client = TestClient(test_app)
-    
+
     response = client.post("/htmx/ask", data={"question": "Hello?"})
     assert response.status_code == 200
     assert "NEEDS CLARIFICATION" in response.text
@@ -178,7 +178,7 @@ def test_ask_conflicting_evidence(mock_ask, mock_session):
     test_app = create_test_app()
     test_app.dependency_overrides[get_session] = override_get_session(mock_session)
     client = TestClient(test_app)
-    
+
     response = client.post("/htmx/ask", data={"question": "Hello?"})
     assert response.status_code == 200
     assert "CONFLICTING EVIDENCE" in response.text
@@ -188,7 +188,7 @@ def test_ask_conflicting_evidence(mock_ask, mock_session):
 @patch('frontend.router.ask')
 def test_ask_service_error(mock_ask):
     mock_ask.side_effect = Exception("Database is down")
-    client = TestClient(app) 
+    client = TestClient(app)
     response = client.post("/htmx/ask", data={"question": "Hello?"})
     assert response.status_code == 200
     assert "SERVICE ERROR" in response.text
@@ -209,3 +209,28 @@ def test_evidence_drawer_missing_take(mock_session):
     response = client.get("/htmx/takes/take_invalid")
     assert response.status_code == 200
     assert "Evidence not found" in response.text
+
+def test_index_form_behavior():
+    client = TestClient(app)
+    response = client.get("/")
+    assert response.status_code == 200
+    html = response.text
+    # Ensure destructive pre-serialization onsubmit handler is absent
+    assert "onsubmit=" not in html
+    # Ensure the question clears only after the HTMX request completes
+    assert "hx-on::after-request" in html
+    assert "if (event.detail.successful)" in html
+    assert "document.getElementById('question-input').value = ''" in html
+
+def test_favicon_route_and_reference():
+    client = TestClient(app)
+
+    # Base template references the local favicon
+    response = client.get("/")
+    assert response.status_code == 200
+    assert 'href="/static/favicon.svg"' in response.text
+
+    # The local favicon route returns 200
+    favicon_response = client.get("/static/favicon.svg")
+    assert favicon_response.status_code == 200
+    assert "svg" in favicon_response.headers.get("content-type", "")

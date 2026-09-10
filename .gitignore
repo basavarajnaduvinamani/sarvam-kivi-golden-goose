@@ -9,3 +9,5 @@ var/
 results/latest/
 tmp/
 kivi-win-setup.exe
+
+.venv/
