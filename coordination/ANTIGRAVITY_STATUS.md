@@ -17,10 +17,19 @@ Antigravity updates this file after each pushed checkpoint. Codex does not edit 
 
 ## Verification
 
-- **Automated Tests**: Passed all 50 frontend test cases. Proved 1) real two-line JSONL upload parses properly, 2) evaluation case drill-down renders the correct fields (Takes, duration, costs), 3) timeline project selector has no invalid HTMX `hx-get` targets, 4) unexpected exceptions are masked.
-- **Browser Automation**: Confirmed successful rendering of timeline project selections, `/import-eval` JSONL upload functionality, and evaluation case drill-down metrics.
-
-## Current work
+- **Automated Tests**: Passed the complete test suite (50/50 tests passing in isolated environment). Proved real JSONL upload, evaluation field mapping, and masked exceptions.
+- **Browser Automation**: Confirmed successful manual interaction with Playwright locally:
+  - `/timeline`: successfully rendered timeline for selected project. No invalid requests.
+  - `/import-eval`: uploaded two-line JSONL. Confirmed honest reporting of 2 failures due to offline embedding provider.
+  - `/import-eval`: Fetched the committed latest evaluation. Confirmed exactly 132/132 cases rendered.
+  - Case Drill-down: Clicked a case and confirmed correct display of Expected vs Actual fields, Takes, metrics, and cost details.
+  - Console: Zero 404, 422, 500, failed assets, or uncaught errors.
+  
+## Screenshots and Recordings
+- Timeline: ![Timeline Selection](file:///C:/Users/Viraj/.gemini/antigravity/brain/ff04c462-74ba-4d0f-b3dc-21146faec414/screenshot_timeline.png)
+- Import JSONL Upload: ![Upload Handling](file:///C:/Users/Viraj/.gemini/antigravity/brain/ff04c462-74ba-4d0f-b3dc-21146faec414/screenshot_upload.png)
+- Evaluation Overview: ![Eval 132 Cases](file:///C:/Users/Viraj/.gemini/antigravity/brain/ff04c462-74ba-4d0f-b3dc-21146faec414/screenshot_eval.png)
+- Case Drill-down: ![Case Fields](file:///C:/Users/Viraj/.gemini/antigravity/brain/ff04c462-74ba-4d0f-b3dc-21146faec414/screenshot_case.png)
 
 - The evaluation integrations are finished, tested, and fully aligned with the Codex backend! Awaiting the final go-ahead for final documentation and submission packaging.
 
