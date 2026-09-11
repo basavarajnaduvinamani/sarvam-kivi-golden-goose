@@ -1,45 +1,46 @@
 # Codex Status
 
-Last updated: September 10, 2026  
-Branch: `codex/september-11-backend`  
-Ready code commit: `8612872`  
-September 11 state: `READY_FOR_INTEGRATION`
+Last updated: September 11, 2026
+
+Branch: `codex/evaluation-core`
+
+Contract checkpoint: `7a234eb`
+
+Evaluation implementation checkpoint: `6e22386`
+
+Milestone state: `READY_FOR_REVIEW`
 
 ## Completed
 
-- Added explicit required-evidence semantics to each memory-evidence link.
-- Enforced complete per-claim citations across every required supporting Take ID.
-- Excluded memories when any required take is missing or deleted.
-- Added deterministic correction linking only when exactly one active subject/predicate match exists.
-- Returned and persisted typed `SERVICE_ERROR` query runs for embedding, answer, and citation-validation failures.
-- Kept private provider diagnostics internal while returning safe reviewer-visible error wording.
-- Added a fixed-seed generator and committed exactly 500 transcript-like records, gold labels, a 20-project registry, and a hash manifest.
-- Added reviewer CLI commands for serve, migrate, guarded reset, FTS rebuild, project import, corpus validation/import, and state inspection.
-- Added an active-and-sufficient-evidence FTS rebuild policy.
-- Proved tombstone persistence, content purge, dependent-memory invalidation, and exclusion after process restart and index rebuild.
+- Frozen the timeline, briefing, import, evaluation-run, evaluation-summary, and case-detail contracts in integration contract version 1.1.
+- Added a project timeline service and briefing endpoint using the existing typed answer and citation contract.
+- Added explicit named-project disagreement detection before retrieval to prevent selected-scope leakage.
+- Added semantically equivalent approved-value handling to avoid false conflicts while preserving genuine schedule conflicts.
+- Generated and committed exactly 132 deterministic cases across 11 categories and all five typed answer states.
+- Built an offline evaluator that imports all 500 corpus records through the production ingestion service into an isolated migrated SQLite database.
+- Exercised project isolation, cross-application recovery, distributed evidence, corrections, epistemic safety, abstention, provenance, deletion after session restart and index rebuild, service failures, conflicts, multilingual identifiers, and preference precedence.
+- Added reviewer-facing evaluation routes and the `kivi evaluate --mode deterministic|candidate` CLI command.
+- Produced inspectable JSON and Markdown evaluation reports with category metrics, integrity violation counts, latency, storage growth, model usage, and cost.
+- Added regression coverage for the evaluator, generator, CLI modes, API reads, and explicit project-scope disagreement.
 
 ## Verification
 
-- Pytest: 19 passing tests.
-- Deterministic corpus check: 500 records and all committed hashes match.
-- Corpus CLI validation: 500 records accepted.
-- Fresh Alembic upgrade through `d164b8a1c321`: passed.
-- Alembic schema-drift check: no new operations detected.
-- Reviewer CLI migrate, rebuild-index, and inspect commands: passed on a fresh SQLite database.
-- Python compilation and `git diff --check`: passed.
+- Deterministic evaluation: 132 passed, 0 failed across 11 categories.
+- Corpus ingestion during evaluation: 500 records ingested through the real pipeline.
+- Integrity violations: 0 cross-project leaks, 0 deleted-memory resurrections, 0 invalid citations, 0 rejected-proposal promotions, 0 fabricated answers.
+- Complete pytest suite: 40 passed, 0 failed, 0 skipped, 2 dependency deprecation warnings.
+- Evaluation generator freshness check: passed.
+- Windows CLI evaluation and UTF-8 output: passed.
+- Python compilation: passed.
 - Part One files: unchanged.
 
 ## Request to Antigravity
 
-1. Finish and push the current frontend corrective checkpoint from the Antigravity-owned branch.
-2. Fetch `codex/september-11-backend` and review commit `8612872`.
-3. Integrate the branch only after the frontend checkpoint is clean, then run the complete combined browser and CLI flow.
-4. Verify that all five statuses still render correctly and that evidence controls tolerate the added `is_required` field.
-5. Record the integrated commit and browser evidence in `coordination/ANTIGRAVITY_STATUS.md`.
+1. Continue the Timeline and Import/Evaluation UI work from contract checkpoint `7a234eb` without changing frozen response fields.
+2. After the Codex evaluation implementation is merged, rebase onto `main` and connect the evaluation views to `/evaluate/run`, `/evaluate/latest`, and `/evaluate/cases/{case_id}`.
+3. Verify the project timeline against `/projects/{project_id}/timeline` and use the existing take-deletion endpoint for revoke actions.
+4. Run the complete suite and browser verification, then record exact evidence in `coordination/ANTIGRAVITY_STATUS.md`.
 
-## Next Codex work — September 12 only
+## Stop Boundary
 
-- Build the deterministic adversarial evaluation harness and metrics report.
-- Complete `RUN.md`, architecture, design-decision, and evaluation documentation.
-- Perform clean-clone reviewer rehearsal and final submission audit.
-- No September 12 work begins until the user resumes the next bounded milestone.
+The approved evaluation-core milestone is complete. No final documentation, clean-clone rehearsal, submission packaging, or later milestone work begins until the user explicitly resumes it.

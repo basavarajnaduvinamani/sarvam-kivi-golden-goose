@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -50,6 +51,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     inspect = commands.add_parser("inspect", help="print reviewer-visible database counts as JSON")
     inspect.add_argument("--project-id")
+    evaluate = commands.add_parser("evaluate", help="run the committed 132-case evaluation suite")
+    evaluate.add_argument("--mode", choices=("deterministic", "candidate"), default="deterministic")
     return parser
 
 
@@ -176,8 +179,13 @@ def main() -> None:
             if args.projects:
                 import_project_registry(args.projects)
             print(json.dumps(import_corpus(args.path, args.expected_count), ensure_ascii=False))
-    else:
+    elif args.command == "inspect":
         print(json.dumps(inspect_database(args.project_id), ensure_ascii=False))
+    else:
+        from .evaluation import run_evaluation
+
+        payload = run_evaluation(args.mode).model_dump_json(indent=2) + "\n"
+        sys.stdout.buffer.write(payload.encode("utf-8"))
 
 
 if __name__ == "__main__":

@@ -47,6 +47,19 @@ def _client(session_factory, providers):
     return TestClient(create_app(providers, session_dependency=session_dependency))
 
 
+def test_explicit_project_name_cannot_override_selected_scope(session_factory):
+    providers = ProviderBundle(extractor=FakeExtractor(), embedder=FakeEmbedder(), answerer=FakeAnswerer())
+    with _client(session_factory, providers) as client:
+        client.post("/projects", json={"id": "project-harbor", "name": "Project Harbor"})
+        client.post("/projects", json={"id": "project-willow", "name": "Project Willow", "aliases": ["Willow"]})
+        response = client.post(
+            "/ask",
+            json={"project_id": "project-harbor", "question": "What is Project Willow's release schedule?"},
+        )
+    assert response.status_code == 200
+    assert response.json()["status"] == "NEEDS_CLARIFICATION"
+
+
 def test_retrieval_provider_failure_returns_typed_error_and_persists_diagnostic(session_factory):
     providers = ProviderBundle(
         extractor=FakeExtractor(),
