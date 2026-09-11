@@ -2,7 +2,7 @@
 ## Canonical Reference — v1.0
 
 **Document class:** Normative design specification
-**Status:** Candidate for Codex final review
+**Status:** Approved for implementation
 **Document owner:** Basavaraj A. Naduvinamani
 **Implementation targets:** `frontend/templates/` and `frontend/static/styles.css`
 **Source contracts:** `PART_TWO_SPEC.md` §13 and `coordination/INTEGRATION_CONTRACT.md` v1.2
@@ -18,10 +18,11 @@ This document is the single canonical design specification for the Kivi local we
 1. `coordination/INTEGRATION_CONTRACT.md` v1.2 — schema, routes, typed statuses, field names
 2. `backend/kivi/schemas.py` and `backend/kivi/enums.py` — exact Pydantic models and StrEnum values
 3. `backend/kivi/app.py` — implemented FastAPI routes
-4. `PART_TWO_SPEC.md` — product scope, data model, supported actions, evaluation contract
-5. This document — visual system, component behavior, microcopy rules
-6. `DESIGN.md` (HeyKivi brand) — authentic palette and tone reference; visual only
-7. `stitch-design/*.DESIGN.md` — secondary visual token references; no product authority
+4. `frontend/router.py` — implemented HTMX routes
+5. `PART_TWO_SPEC.md` — product scope, data model, supported actions, evaluation contract
+6. This document — visual system, component behavior, microcopy rules
+7. HeyKivi visual reference study — palette and tone reference only.
+8. `stitch-design/*.DESIGN.md` — secondary visual token references; no product authority
 
 Product contracts always override visual references. Visual references are consulted for palette, type tone, and component intent only.
 
@@ -280,7 +281,7 @@ The canvas MAY carry a subtle CSS noise texture at 2–4% opacity to break pure 
 |---|---|
 | Interactive state change (color, border) | 120–160 ms |
 | Component appear or disappear | 180–220 ms |
-| Drawer or panel reveal | 220–260 ms |
+| Drawer or panel reveal | 220–250 ms |
 | Loading pulse cycle | 1,200 ms |
 
 ### 8.2 Easing
@@ -297,7 +298,7 @@ Conversation history on Ask and Briefing SHOULD scroll smoothly to the latest in
 
 ### 8.5 Reduced-motion suppression
 
-Under `prefers-reduced-motion: reduce`, all animations and transitions MUST be suppressed per §2.7. Any optional aurora or stage-drift glows MUST have `animation-play-state: paused` and remain static.
+Under `prefers-reduced-motion: reduce`, all animations and transitions MUST be suppressed per §2.7.
 
 ---
 
@@ -382,7 +383,7 @@ Used for: "ask", "generate briefing", "scope take", "import", "run evaluation", 
 - Radius: `--radius-md` (8px)
 - Padding: `--space-sm` vertical, `--space-lg` horizontal
 - Minimum height: 44px
-- Hover: `background-color: #24684a`
+- Hover: `background-color: #98cc59`
 - Active: `transform: translateY(1px) scale(0.98)`
 - Focus (`:focus-visible`): `outline: 2px solid var(--color-accent); outline-offset: 2px`
 
@@ -867,14 +868,8 @@ The `error_type` field in `CorpusImportError` may contain Python exception class
 
 | error_type value | Display label | Show detail? |
 |---|---|---|
-| `validation_error` | "validation error" | yes |
-| `schema_error` | "record format error" | yes |
-| `duplicate_take` | "duplicate record" | yes |
-| `missing_project` | "unknown project" | yes |
-| `ingestion_error` | "could not process record" | yes |
-| `provider_unavailable` | "service unavailable" | no |
-| `embedding_error` | "could not embed record" | no |
-| `unknown` | "processing error" | no |
+| `IngestionError` | "could not process record" | yes (if explicitly sanitized) |
+| `ProviderUnavailable` | "service unavailable" | no |
 | any other value | "processing error" | no |
 
 ### 20.4 Evaluation panel
@@ -1157,7 +1152,7 @@ All design tokens from §4 through §7 MUST be expressed as CSS custom propertie
 ### 25.6 Template safety
 
 - All template variables MUST be auto-escaped by Jinja2 with `autoescape=True`
-- `| safe` MUST NOT be applied to any user-sourced or model-generated field
+- `| safe` MUST NOT be applied to any user-sourced or backend-provided field
 - This includes `response.answer`, `claim.claim_text`, `take.formatted_text`, `take.raw_asr`, and correction note fields
 
 ---
@@ -1286,18 +1281,18 @@ An implementation is complete only when every item below is satisfied.
 
 | Source | Idea | Adopted as |
 |---|---|---|
-| HeyKivi DESIGN.md | Near-black canvas #0b0e0a, deepest layer #060a05 | `--color-canvas`, `--color-depth` in §4.1 |
-| HeyKivi DESIGN.md | Warm cream primary text #f4f1e6 | `--color-ink-primary` in §4.2 |
-| HeyKivi DESIGN.md | Lime-green primary accent #a8e063 | `--color-accent` in §4.3 |
-| HeyKivi DESIGN.md | Destructive red #ff6b6b | `--color-rose` in §4.3 |
-| HeyKivi DESIGN.md | Secondary text #b9b6a8 | `--color-ink-secondary` in §4.2 |
-| HeyKivi DESIGN.md | Hairline borders rgba(255,255,255,0.07–0.10) | `--color-border-hairline` in §4.3 |
-| HeyKivi DESIGN.md | Border radii: full=999px, lg=12px, md=8px, sm=4px | `--radius-*` tokens in §7.1 |
-| HeyKivi DESIGN.md | Input focus: 3px lime glow rgba(168,224,99,0.12) | §11.4 |
-| HeyKivi DESIGN.md | Button hover: darken to #24684a | §11.1 |
-| HeyKivi DESIGN.md | Active button: translateY(1px) scale(0.98) | §11.1 |
-| HeyKivi DESIGN.md | 150 ms micro-interaction timing | §8.1 (within 120–250 ms range) |
-| HeyKivi DESIGN.md | prefers-reduced-motion suppression | §2.7 and §8.5 |
+| HeyKivi visual reference study | Near-black canvas #0b0e0a, deepest layer #060a05 | `--color-canvas`, `--color-depth` in §4.1 |
+| HeyKivi visual reference study | Warm cream primary text #f4f1e6 | `--color-ink-primary` in §4.2 |
+| HeyKivi visual reference study | Lime-green primary accent #a8e063 | `--color-accent` in §4.3 |
+| HeyKivi visual reference study | Destructive red #ff6b6b | `--color-rose` in §4.3 |
+| HeyKivi visual reference study | Secondary text #b9b6a8 | `--color-ink-secondary` in §4.2 |
+| HeyKivi visual reference study | Hairline borders rgba(255,255,255,0.07–0.10) | `--color-border-hairline` in §4.3 |
+| HeyKivi visual reference study | Border radii: full=999px, lg=12px, md=8px, sm=4px | `--radius-*` tokens in §7.1 |
+| HeyKivi visual reference study | Input focus: 3px lime glow rgba(168,224,99,0.12) | §11.4 |
+| HeyKivi visual reference study | Button hover: shift to #98cc59 | §11.1 |
+| HeyKivi visual reference study | Active button: translateY(1px) scale(0.98) | §11.1 |
+| HeyKivi visual reference study | 150 ms micro-interaction timing | §8.1 (within 120–250 ms range) |
+| HeyKivi visual reference study | prefers-reduced-motion suppression | §2.7 and §8.5 |
 | Stitch | Editorial serif headings | §5.1 editorial font voice |
 | Stitch | Monospace strictly for IDs and timestamps | §5.3 |
 | Stitch | Lowercase section category labels | §10.2, §26.1 |
