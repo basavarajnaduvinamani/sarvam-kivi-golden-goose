@@ -80,9 +80,30 @@ async def htmx_import_corpus(request: Request, corpus_file: UploadFile = File(..
 
 @router.get("/htmx/evaluate/latest")
 def htmx_evaluate_latest(request: Request):
-    # Dependency injected or mock evaluation run since Codex is building evaluators
-    run = getattr(request.app.state, "mock_evaluation_run", None)
-    return templates.TemplateResponse(request=request, name="components/eval_result.html", context={"run": run})
+    from backend.kivi.evaluation import get_latest_run
+    try:
+        run = get_latest_run()
+        return templates.TemplateResponse(request=request, name="components/eval_result.html", context={"run": run})
+    except Exception as e:
+        return templates.TemplateResponse(request=request, name="components/eval_result.html", context={"run": None, "error": str(e)})
+
+@router.post("/htmx/evaluate/run")
+def htmx_evaluate_run(request: Request, mode: str = Form("deterministic")):
+    from backend.kivi.evaluation import run_evaluation
+    try:
+        run = run_evaluation(mode=mode)
+        return templates.TemplateResponse(request=request, name="components/eval_result.html", context={"run": run})
+    except Exception as e:
+        return templates.TemplateResponse(request=request, name="components/eval_result.html", context={"run": None, "error": str(e)})
+
+@router.get("/htmx/evaluate/cases/{case_id}")
+def htmx_evaluate_case(case_id: str, request: Request):
+    from backend.kivi.evaluation import get_case_result
+    try:
+        case = get_case_result(case_id)
+        return templates.TemplateResponse(request=request, name="components/eval_case.html", context={"case": case})
+    except Exception as e:
+        return templates.TemplateResponse(request=request, name="components/eval_case.html", context={"case": None, "error": str(e)})
 
 @router.delete("/htmx/takes/{take_id}")
 def htmx_revoke_take(take_id: str, request: Request, session: Session = Depends(get_session)):

@@ -1,0 +1,56 @@
+{% if error %}
+<div class="error-box" style="color: red;">
+    Error: {{ error }}
+</div>
+{% elif case %}
+<div style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+    <h3>Case: {{ case.case_id }} ({{ case.category }})</h3>
+    <span style="color: {{ 'green' if case.passed else 'red' }}; font-weight: bold; font-size: 1.2em;">
+        {{ "PASS" if case.passed else "FAIL" }}
+    </span>
+    
+    <p><strong>Project Scope:</strong> {{ case.project_scope or "None" }}</p>
+    <p><strong>Question:</strong> {{ case.question }}</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <div>
+            <h4>Expected</h4>
+            <pre style="background: #f0f0f0; padding: 0.5rem; border-radius: 4px; overflow-x: auto;">
+Status: {{ case.expected_status }}
+{% if case.expected_answer_regex %}Answer matches: {{ case.expected_answer_regex }}{% endif %}
+{% if case.expected_supporting_take_ids %}Takes: {{ case.expected_supporting_take_ids | join(', ') }}{% endif %}
+            </pre>
+        </div>
+        <div>
+            <h4>Actual</h4>
+            <pre style="background: #f0f0f0; padding: 0.5rem; border-radius: 4px; overflow-x: auto;">
+Status: {{ case.actual_status }}
+{% if case.actual_answer %}Answer: {{ case.actual_answer }}{% endif %}
+{% if case.actual_supporting_take_ids %}Takes: {{ case.actual_supporting_take_ids | join(', ') }}{% endif %}
+            </pre>
+        </div>
+    </div>
+
+    {% if not case.passed %}
+    <div style="margin-top: 1rem; border-top: 1px solid #ccc; padding-top: 1rem; color: red;">
+        <h4>Failures:</h4>
+        <ul>
+            {% for reason in case.failure_reasons %}
+                <li>{{ reason }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 1rem; border-top: 1px solid #ccc; padding-top: 1rem;">
+        <h4>Performance & Cost</h4>
+        <ul style="font-size: 0.9em; color: #555;">
+            <li>Retrieval Latency: {{ case.retrieval_latency_ms }} ms</li>
+            <li>E2E Latency: {{ case.end_to_end_latency_ms }} ms</li>
+            <li>Input Tokens: {{ case.input_tokens }}</li>
+            <li>Output Tokens: {{ case.output_tokens }}</li>
+            <li>Cost: ${{ case.estimated_cost_usd }}</li>
+        </ul>
+    </div>
+</div>
+{% endif %}

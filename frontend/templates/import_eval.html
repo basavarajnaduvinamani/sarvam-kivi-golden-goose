@@ -21,12 +21,18 @@
     <!-- Evaluation View -->
     <div class="eval-section">
         <h2>Evaluation Dashboard</h2>
-        <div style="margin-bottom: 1rem;">
+        <div style="margin-bottom: 1rem; display: flex; gap: 1rem;">
             <button class="submit-btn" style="padding: 0.5rem 1rem;"
                     hx-get="/htmx/evaluate/latest" 
                     hx-target="#eval-results">
                 Fetch Latest Evaluation
             </button>
+            <form hx-post="/htmx/evaluate/run" hx-target="#eval-results" style="margin: 0;">
+                <input type="hidden" name="mode" value="deterministic">
+                <button type="submit" class="submit-btn" style="padding: 0.5rem 1rem; background-color: #28a745;">
+                    Run Deterministic Eval
+                </button>
+            </form>
         </div>
 
         <div id="eval-results">

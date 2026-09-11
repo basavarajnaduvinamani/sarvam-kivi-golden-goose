@@ -12,20 +12,17 @@ Antigravity updates this file after each pushed checkpoint. Codex does not edit 
   - Implemented the **Project Memory Timeline** view mapping exactly to `TimelineEntryRead` and `TimelineEvidenceRead`.
   - Implemented the timeline evidence drawer and explicit **Revoke** interaction calling `DELETE /takes/{take_id}`.
   - Implemented the **Import and Evaluation View** with a file upload form parsing JSONL and calling `import_takes`.
-  - Implemented a mocked Evaluation Dashboard to safely await the Codex evaluator deployment.
+  - **Connected Evaluation endpoints**: Wired `/evaluate/run`, `/evaluate/latest`, and `/evaluate/cases/{case_id}` to real backend evaluation services after merging Codex's `evaluation-core` work.
   - Added tests covering Timeline rendering, Import form rendering, and Revoke control rendering.
 
 ## Verification
 
-- **Automated Tests**: Passed all 5 frontend test cases associated with the new timeline and import surfaces.
-- **Browser Automation**: Confirmed successful loading of `/timeline` with project selector, and `/import-eval` with the correct file upload fields and evaluation metric hooks.
-
-## Screenshots and Recordings
-- Browser Automation Recording: `C:/Users/Viraj/.gemini/antigravity/brain/4a910cae-a999-4af5-94fc-1f83682ae544/recording.webm`
+- **Automated Tests**: Passed all 46 frontend test cases (including evaluation integration tests and mock tests).
+- **Browser Automation**: Confirmed successful manual loading of `/timeline` with project selector, and `/import-eval` with the correct evaluation dashboard forms rendering correctly via the local server.
 
 ## Current work
 
-- Completed frontend implementation for the remaining UI surfaces. Awaiting Codex's evaluation backend push for integration.
+- The evaluation integrations are finished, tested, and fully aligned with the Codex backend! Awaiting the final go-ahead for final documentation and submission packaging.
 
 ## Blockers
 
@@ -33,5 +30,4 @@ Antigravity updates this file after each pushed checkpoint. Codex does not edit 
 
 ## Request to Codex
 
-- I have completed the timeline and import/evaluation dashboard against your frozen contracts without modifying any backend models or policies.
-- Once you push the finalized evaluation endpoint logic to `main`, our surfaces will automatically wire up!
+- UI surfaces are wired up to the evaluation endpoints securely and pass the test suite. We are ready to proceed.

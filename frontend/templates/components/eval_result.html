@@ -33,7 +33,7 @@
     <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 0.5rem;">
         {% for case in run.cases %}
             <div style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #eee;">
-                <strong>{{ case.case_id }}</strong> - {{ case.category }}
+                <strong><a href="#" hx-get="/htmx/evaluate/cases/{{ case.case_id }}" hx-target="#eval-case-container">{{ case.case_id }}</a></strong> - {{ case.category }}
                 <span style="color: {{ 'green' if case.passed else 'red' }}; float: right;">{{ "PASS" if case.passed else "FAIL" }}</span>
                 <p style="margin: 0.2rem 0; font-size: 0.9em;">Q: {{ case.question }}</p>
                 
@@ -50,5 +50,6 @@
             </div>
         {% endfor %}
     </div>
+    <div id="eval-case-container"></div>
 </div>
 {% endif %}

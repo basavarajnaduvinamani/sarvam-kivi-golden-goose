@@ -309,7 +309,8 @@ def test_htmx_import_success(mock_import_takes, mock_session):
     assert "Import Successful" in response.text
     assert "Successfully Ingested:</strong> 1" in response.text
 
-def test_htmx_evaluate_latest_mock():
+@patch('backend.kivi.evaluation.get_latest_run')
+def test_htmx_evaluate_latest(mock_get_latest):
     test_app = create_test_app()
     from backend.kivi.schemas import EvaluationRunRead, EvaluationMetricsRead
     from datetime import datetime, timezone
@@ -328,7 +329,7 @@ def test_htmx_evaluate_latest_mock():
         input_tokens=1000, output_tokens=500, estimated_cost_usd=0.01,
         by_category={}
     )
-    test_app.state.mock_evaluation_run = EvaluationRunRead(
+    mock_get_latest.return_value = EvaluationRunRead(
         run_id="run_123",
         mode="deterministic",
         started_at=datetime.now(timezone.utc),
