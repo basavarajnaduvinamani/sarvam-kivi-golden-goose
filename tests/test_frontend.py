@@ -456,4 +456,3 @@ def test_unexpected_exceptions_are_masked():
         html = response.text
         assert "SUPER SECRET EXCEPTION" not in html
         assert "An internal error occurred" in html
-
