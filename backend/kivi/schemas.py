@@ -135,6 +135,15 @@ class TakeIngestResult(BaseModel):
     ignored_reason: str | None = None
 
 
+class TakeScopeAssignmentRequest(BaseModel):
+    project_id: str = Field(min_length=1, max_length=100)
+
+
+class MemoryCorrectionRequest(BaseModel):
+    corrected_value: str = Field(min_length=1)
+    note: str | None = Field(default=None, max_length=1000)
+
+
 class CorpusImportError(BaseModel):
     take_id: str
     error_type: str

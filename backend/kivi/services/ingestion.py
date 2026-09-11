@@ -53,6 +53,31 @@ def ingest_take(
             ignored_reason="Project scope is unresolved; the take was retained but did not create memory.",
         )
 
+    created, ignored_reason = create_memories_for_take(session, payload, take, project, extractor)
+
+    try:
+        session.commit()
+    except IntegrityError as exc:
+        session.rollback()
+        raise IngestionError("take or memory violated a persistence constraint") from exc
+
+    for memory in created:
+        session.refresh(memory)
+    session.refresh(take)
+    return TakeIngestResult(
+        take=TakeRead.model_validate(take),
+        memories=[present_memory(memory) for memory in created],
+        ignored_reason=ignored_reason,
+    )
+
+
+def create_memories_for_take(
+    session: Session,
+    payload: TakeCreate,
+    take: Take,
+    project: Project,
+    extractor: MemoryExtractor,
+) -> tuple[list[Memory], str | None]:
     extraction_result = extractor.extract(payload, project.name)
 
     created: list[Memory] = []
@@ -90,6 +115,7 @@ def ingest_take(
             if superseded.lifecycle_status != LifecycleStatus.ACTIVE:
                 raise IngestionError("only active memory can be superseded")
             superseded.lifecycle_status = LifecycleStatus.SUPERSEDED
+            superseded.valid_to = payload.event_ts
 
         stable_key = f"{payload.take_id}|{candidate_index}|{extraction_result.decision.schema_version}"
         memory = Memory(
@@ -123,18 +149,5 @@ def ingest_take(
         session.add(memory)
         created.append(memory)
 
-    try:
-        session.commit()
-    except IntegrityError as exc:
-        session.rollback()
-        raise IngestionError("take or memory violated a persistence constraint") from exc
-
-    for memory in created:
-        session.refresh(memory)
-    session.refresh(take)
-    return TakeIngestResult(
-        take=TakeRead.model_validate(take),
-        memories=[present_memory(memory) for memory in created],
-        ignored_reason=extraction_result.decision.ignored_reason,
-    )
+    return created, extraction_result.decision.ignored_reason
 

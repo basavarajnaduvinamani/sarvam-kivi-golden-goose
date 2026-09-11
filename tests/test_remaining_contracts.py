@@ -72,3 +72,77 @@ def test_evaluation_mode_contract_rejects_unknown_modes():
     assert EvaluationRunRequest(mode="candidate").mode == "candidate"
     with pytest.raises(ValidationError):
         EvaluationRunRequest(mode="unknown")
+
+
+def test_user_correction_creates_evidence_and_supersedes_original(client):
+    client.post("/projects", json={"id": "project-harbor", "name": "Project Harbor", "aliases": []})
+    original = _ingest(client, "take_original", "Tuesday at 9 AM").json()
+    original_memory_id = original["memories"][0]["id"]
+
+    response = client.post(
+        f"/memories/{original_memory_id}/correct",
+        json={"corrected_value": "Thursday at 4 PM", "note": "Confirmed by Maya"},
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    correction = payload["memories"][0]
+    assert correction["memory_type"] == "correction"
+    assert correction["epistemic_status"] == "APPROVED"
+    assert correction["lifecycle_status"] == "ACTIVE"
+    assert correction["supersedes_memory_id"] == original_memory_id
+    assert correction["object_value"] == "Thursday at 4 PM"
+    assert correction["extraction_method"] == "user_confirmed_correction"
+    assert correction["evidence"][0]["take_id"] == payload["take"]["id"]
+    assert payload["take"]["source_application"] == "Kivi Memory Inspector"
+
+    timeline = client.get("/projects/project-harbor/timeline").json()
+    entries = {entry["memory_id"]: entry for entry in timeline["entries"]}
+    assert entries[original_memory_id]["lifecycle_status"] == "SUPERSEDED"
+    assert entries[original_memory_id]["valid_to"] is not None
+    assert entries[correction["id"]]["lifecycle_status"] == "ACTIVE"
+
+    answer = client.post(
+        "/ask",
+        json={"project_id": "project-harbor", "question": "When is the Harbor release?"},
+    ).json()
+    assert answer["status"] == "ANSWERED"
+    assert "Thursday at 4 PM" in answer["answer"]
+    assert answer["supporting_take_ids"] == [payload["take"]["id"]]
+
+
+def test_unscoped_take_can_be_explicitly_assigned_and_processed(client):
+    client.post("/projects", json={"id": "project-harbor", "name": "Project Harbor", "aliases": []})
+    created = client.post(
+        "/takes",
+        json={
+            "take_id": "take_unscoped_assignment",
+            "raw_asr": "harbor release thursday",
+            "formatted_text": "Project Harbor's release is Thursday at 4 PM.",
+            "source_application": "Notepad",
+            "event_ts": "2026-09-11T09:00:00Z",
+            "metadata": {"object_value": "Thursday at 4 PM"},
+        },
+    )
+    assert created.status_code == 201
+    assert created.json()["memories"] == []
+    assert [item["id"] for item in client.get("/takes", params={"unscoped_only": True}).json()] == [
+        "take_unscoped_assignment"
+    ]
+
+    assigned = client.post(
+        "/takes/take_unscoped_assignment/scope",
+        json={"project_id": "project-harbor"},
+    )
+    assert assigned.status_code == 200, assigned.text
+    payload = assigned.json()
+    assert payload["take"]["project_id"] == "project-harbor"
+    assert payload["memories"][0]["evidence"][0]["take_id"] == "take_unscoped_assignment"
+    assert client.get("/takes", params={"unscoped_only": True}).json() == []
+
+
+def test_scope_assignment_rejects_reassignment(client):
+    client.post("/projects", json={"id": "project-harbor", "name": "Project Harbor", "aliases": []})
+    _ingest(client, "take_scoped", "Thursday at 4 PM")
+    response = client.post("/takes/take_scoped/scope", json={"project_id": "project-harbor"})
+    assert response.status_code == 409
+    assert "already has confirmed project scope" in response.json()["detail"]

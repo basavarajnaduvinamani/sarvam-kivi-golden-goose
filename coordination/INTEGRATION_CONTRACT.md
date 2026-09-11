@@ -1,10 +1,10 @@
 # Backend and Frontend Integration Contract
 
-Contract version: `1.1`
+Contract version: `1.2`
 
 Source implementation: `backend/kivi/schemas.py`
 
-Frozen for the September 11 remaining interface surfaces
+Frozen for the full functional product milestone
 
 ## Ask request
 
@@ -101,6 +101,37 @@ Relevant response fields:
 
 Each memory exposes separate `epistemic_status` and `lifecycle_status` plus its evidence list. The UI must not merge these two concepts.
 
+## User-confirmed correction
+
+`POST /memories/{memory_id}/correct`
+
+```json
+{
+  "corrected_value": "Thursday at 4 PM",
+  "note": "Confirmed by Maya"
+}
+```
+
+The response is `TakeIngestResult`. A successful correction creates a new immutable Take from the explicit user action, creates an `APPROVED` and `ACTIVE` correction memory, and makes the previous memory `SUPERSEDED` with `valid_to` set. The original Take and memory remain inspectable. The UI must never edit the old value in place.
+
+The interface shows the correction action only for `ACTIVE` memories. After success it refreshes the timeline and opens or highlights the new correction and its Take-ID evidence. A `409` response represents an invalid user action such as correcting a non-active memory; a `503` response represents unavailable embedding infrastructure.
+
+## Unscoped-take confirmation
+
+`GET /takes?unscoped_only=true` returns retained, non-deleted takes whose project is unresolved.
+
+`POST /takes/{take_id}/scope`
+
+```json
+{
+  "project_id": "project-harbor"
+}
+```
+
+The response is `TakeIngestResult`. Scope assignment is an explicit user confirmation, not a semantic inference. The backend rejects deleted takes, already-scoped takes, purged takes, and unknown projects. A successful assignment processes the preserved Take through the existing extraction pipeline and leaves its Take ID unchanged.
+
+The UI presents an unscoped inbox with the original formatted text, source application, event time, a project selector, and an explicit confirmation action. It must not preselect a project based on similarity or silently assign scope.
+
 ## Project timeline
 
 `GET /projects/{project_id}/timeline`
@@ -138,3 +169,5 @@ An evaluation run contains `run_id`, `mode`, timestamps, corpus and case counts,
 4. Deleted takes may remain inspectable as tombstone metadata, but purged content fields will be `null`.
 5. No frontend fallback may transform `NO_EVIDENCE` or `SERVICE_ERROR` into an answer.
 6. Field-name or enum changes require a contract-version update and coordinated tests.
+7. Corrections create new evidence and never mutate the original memory value in place.
+8. Project assignment requires explicit user confirmation; similarity may not select or preselect a project.

@@ -22,12 +22,14 @@ from .schemas import (
     EvaluationCaseResultRead,
     EvaluationRunRead,
     EvaluationRunRequest,
+    MemoryCorrectionRequest,
     ProjectCreate,
     ProjectRead,
     ProjectTimelineResponse,
     TakeCreate,
     TakeIngestResult,
     TakeRead,
+    TakeScopeAssignmentRequest,
     TombstoneRead,
 )
 from .presenters import present_memory
@@ -35,6 +37,7 @@ from .schemas import MemoryRead
 from .services.deletion import DeletionError, delete_take, get_tombstone
 from .services.corpus_import import import_takes
 from .services.ingestion import IngestionError, ingest_take
+from .services.memory_control import MemoryControlError, assign_take_scope, correct_memory
 from .services.retrieval import ask
 from .services.timeline import TimelineError, get_project_timeline
 from .settings import get_settings
@@ -122,14 +125,32 @@ def create_app(
     def list_takes(
         project_id: str | None = None,
         include_deleted: bool = False,
+        unscoped_only: bool = False,
         session: Session = Depends(session_dependency),
     ) -> list[Take]:
         statement = select(Take).order_by(Take.event_ts.desc())
         if project_id is not None:
             statement = statement.where(Take.project_id == project_id)
+        if unscoped_only:
+            statement = statement.where(Take.project_id.is_(None))
         if not include_deleted:
             statement = statement.where(Take.is_deleted.is_(False))
         return list(session.scalars(statement))
+
+    @app.post("/takes/{take_id}/scope", response_model=TakeIngestResult)
+    def assign_scope(
+        take_id: str,
+        payload: TakeScopeAssignmentRequest,
+        session: Session = Depends(session_dependency),
+    ) -> TakeIngestResult:
+        try:
+            return assign_take_scope(session, take_id, payload, bundle.extractor)
+        except MemoryControlError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except IngestionError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except ProviderUnavailable as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     @app.get("/takes/{take_id}", response_model=TakeRead)
     def get_take(take_id: str, session: Session = Depends(session_dependency)) -> Take:
@@ -161,6 +182,19 @@ def create_app(
         if memory is None:
             raise HTTPException(status_code=404, detail="memory not found")
         return present_memory(memory)
+
+    @app.post("/memories/{memory_id}/correct", response_model=TakeIngestResult)
+    def correct_existing_memory(
+        memory_id: str,
+        payload: MemoryCorrectionRequest,
+        session: Session = Depends(session_dependency),
+    ) -> TakeIngestResult:
+        try:
+            return correct_memory(session, memory_id, payload, bundle.embedder)
+        except MemoryControlError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except ProviderUnavailable as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     @app.post("/ask", response_model=AskResponse)
     def ask_kivi(payload: AskRequest, session: Session = Depends(session_dependency)) -> AskResponse:
