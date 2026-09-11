@@ -1,0 +1,4 @@
+<div class="error-box" style="color: red; border: 1px solid red; padding: 1rem; margin-top: 1rem;">
+    <p>Failed to correct memory: {{ error }}</p>
+    <button class="btn" onclick="htmx.ajax('GET', '/htmx/timeline/{{ project_id }}', '#timeline-results')">Back to Timeline</button>
+</div>

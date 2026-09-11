@@ -11,3 +11,11 @@ tmp/
 kivi-win-setup.exe
 
 .venv/
+tmp_pytest/
+
+*.db
+
+browser_test_functional.py
+
+seed_functional.py
+PROJECT_WRITING_RULES.md

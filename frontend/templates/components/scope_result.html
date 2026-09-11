@@ -1,0 +1,14 @@
+{% if error %}
+<div class="error-box" style="color: red; border: 1px solid red; padding: 1rem;">
+    Error assigning scope: {{ error }}
+</div>
+{% else %}
+<div class="success-box" style="color: green; border: 1px solid green; padding: 1rem;">
+    <p>Scope assigned successfully!</p>
+    {% if result.ignored_reason %}
+        <p>Take ignored: {{ result.ignored_reason }}</p>
+    {% else %}
+        <p>Created {{ result.memories|length }} memories.</p>
+    {% endif %}
+</div>
+{% endif %}
