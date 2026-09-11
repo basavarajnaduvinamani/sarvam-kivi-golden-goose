@@ -1,4 +1,16 @@
-<div class="error-box" style="color: red; border: 1px solid red; padding: 1rem; margin-top: 1rem;">
-    <p>Failed to correct memory: {{ error }}</p>
-    <button class="btn" onclick="htmx.ajax('GET', '/htmx/timeline/{{ project_id }}', '#timeline-results')">Back to Timeline</button>
+<div class="card border-failed mb-md">
+  <div class="type-body-md color-rose">
+    {% if error %}
+      {% if 'superseded' in error|lower or 'conflict' in error|lower %}
+        This memory has already been superseded and cannot be corrected again.
+      {% elif 'unavailable' in error|lower %}
+        The reasoning service is temporarily unavailable. Try again in a moment.
+      {% else %}
+        {{ error }}
+      {% endif %}
+    {% else %}
+      An internal error occurred.
+    {% endif %}
+  </div>
+  <a href="#" onclick="htmx.ajax('GET', '/htmx/timeline/{{ project_id }}', '#timeline-results'); return false;" class="color-accent type-body-sm mt-sm inline-block">reload timeline</a>
 </div>

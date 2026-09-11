@@ -1,47 +1,49 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="import-eval-container" style="padding: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-    <!-- Import View -->
-    <div class="import-section">
-        <h2>Import Corpus</h2>
-        <form id="import-form" hx-post="/htmx/import" hx-encoding="multipart/form-data" hx-target="#import-results" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px;">
-            <div style="margin-bottom: 1rem;">
-                <label for="corpus_file">Select JSONL Corpus File:</label><br>
-                <input type="file" id="corpus_file" name="corpus_file" accept=".json,.jsonl" required style="margin-top: 0.5rem;">
-            </div>
-            <button type="submit" class="submit-btn" style="padding: 0.5rem 1rem;">Import</button>
-        </form>
+{% block sidebar %}{% endblock %}
 
-        <div id="import-results" style="margin-top: 1rem;">
-            <!-- Import results will render here -->
-        </div>
+{% block content_wrapper %}
+<div class="content-stage wide">
+  <!-- Import Panel -->
+  <section class="panel-section">
+    <h2 class="type-headline-sm color-primary mb-lg">import corpus</h2>
+    <form hx-post="/htmx/import" hx-target="#import-result" hx-encoding="multipart/form-data" class="flex-col gap-md">
+      <div>
+        <label class="type-body-md color-secondary block mb-sm">select a <code>.jsonl</code> corpus file</label>
+        <input type="file" name="corpus_file" accept=".json,.jsonl" required class="w-full">
+      </div>
+      <div>
+        <button type="submit" class="btn-primary" hx-indicator="#import-indicator" hx-disabled-elt="this">import</button>
+      </div>
+      <div id="import-indicator" class="htmx-indicator type-body-sm color-muted pulse" aria-live="polite">uploading...</div>
+    </form>
+    <div id="import-result" class="mt-lg"></div>
+  </section>
+
+  <!-- Evaluation Panel -->
+  <section class="panel-section">
+    <h2 class="type-headline-sm color-primary mb-lg">evaluation</h2>
+    <div class="flex items-center gap-md mb-lg">
+      <button class="btn-secondary" hx-get="/htmx/evaluate/latest" hx-target="#eval-result" hx-indicator="#eval-indicator" hx-disabled-elt="this">fetch latest</button>
+      <form hx-post="/htmx/evaluate/run" hx-target="#eval-result" style="margin:0;">
+        <input type="hidden" name="mode" value="deterministic">
+        <button type="submit" class="btn-primary" hx-indicator="#eval-indicator" hx-disabled-elt="this">run evaluation</button>
+      </form>
+      <div id="eval-indicator" class="htmx-indicator type-body-sm color-muted pulse" aria-live="polite">running...</div>
     </div>
-
-    <!-- Evaluation View -->
-    <div class="eval-section">
-        <h2>Evaluation Dashboard</h2>
-        <div style="margin-bottom: 1rem; display: flex; gap: 1rem;">
-            <button class="submit-btn" style="padding: 0.5rem 1rem;"
-                    hx-get="/htmx/evaluate/latest"
-                    hx-target="#eval-results">
-                Fetch Latest Evaluation
-            </button>
-            <form hx-post="/htmx/evaluate/run" hx-target="#eval-results" style="margin: 0;">
-                <input type="hidden" name="mode" value="deterministic">
-                <button type="submit" class="submit-btn" style="padding: 0.5rem 1rem; background-color: #28a745;">
-                    Run Deterministic Eval
-                </button>
-            </form>
-        </div>
-
-        <div id="eval-results">
-            <p class="empty-state">Click to fetch the latest evaluation metrics.</p>
-        </div>
+    <div id="eval-result">
+      <div class="type-body-md color-dim">
+        No evaluation runs found. Run an evaluation to see results here.
+      </div>
     </div>
+  </section>
 </div>
 
-<!-- Drawer Container for evidence links -->
-<div id="evidence-drawer-container"></div>
-
+<!-- Drawer for Case/Take Inspection placed below the 2 columns -->
+<div class="mt-xl w-full">
+  <div id="eval-case-container"></div>
+  <div id="evidence-drawer-container" class="mt-lg">
+    {% include "components/evidence_drawer.html" %}
+  </div>
+</div>
 {% endblock %}

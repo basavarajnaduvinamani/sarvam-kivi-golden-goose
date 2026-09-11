@@ -1,85 +1,83 @@
 {% if error %}
-<div class="error-box" style="color: red; border: 1px solid red; padding: 1rem;">
-    <p>Error: {{ error }}</p>
-    <button onclick="htmx.ajax('GET', '/htmx/timeline/{{ project_id }}', '#timeline-results')">Back to Timeline</button>
+<div class="card" style="border-color: rgba(255,107,107,0.30);">
+  <div class="type-body-md color-primary">Something went wrong loading this project's timeline.</div>
+  <a href="#" onclick="htmx.ajax('GET', '/htmx/timeline/{{ project_id }}', '#timeline-results'); return false;" class="color-accent type-body-sm">try again</a>
 </div>
 {% elif timeline %}
-<h3>Timeline for {{ timeline.project.name }}</h3>
-
-<div class="timeline-entries" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
-    {% if timeline.entries|length == 0 %}
-        <p>No memories found for this project.</p>
-    {% endif %}
-
+  {% if not timeline.entries %}
+  <div class="type-body-md color-dim text-center mt-lg">No memories found for this project yet.</div>
+  {% else %}
     {% for entry in timeline.entries %}
-        <div class="memory-card" style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px; {% if corrected_memory_id and entry.memory_id == corrected_memory_id %}border-color: green; background: #f0fff0;{% endif %}">
-            <div class="memory-header" style="display: flex; justify-content: space-between;">
-                <strong>{{ entry.memory_type }}</strong>
-                <div>
-                    <span class="badge epistemic-badge" style="background: #eee; padding: 2px 6px; border-radius: 4px;">{{ entry.epistemic_status }}</span>
-                    <span class="badge lifecycle-badge" style="background: #eef; padding: 2px 6px; border-radius: 4px;">{{ entry.lifecycle_status }}</span>
-                </div>
+      <div class="card {% if corrected_memory_id and entry.memory_id == corrected_memory_id %}highlighted{% endif %}">
+        <div class="card-header">
+          <div class="type-label-action color-secondary" style="text-transform: capitalize;">{{ entry.memory_type }}</div>
+          <div class="flex gap-xs">
+            <!-- Epistemic Badge -->
+            <div class="flex-col items-end">
+              <span class="type-label-cat color-dim mb-xs">epistemic</span>
+              {% set es = entry.epistemic_status|lower %}
+              <span class="badge epistemic-{{ es }}" role="status">{{ es }}</span>
             </div>
-
-            <p style="margin: 0.5rem 0;">
-                <span class="subject">{{ entry.subject }}</span>
-                <span class="predicate">{{ entry.predicate }}</span>
-                <span class="object">{{ entry.object_value }}</span>
-            </p>
-
-            <div class="memory-meta" style="font-size: 0.85em; color: #666;">
-                Created: {{ entry.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
-                {% if entry.supersedes_memory_id %}
-                    <br>Supersedes: <code>{{ entry.supersedes_memory_id }}</code>
-                {% endif %}
-                {% if entry.superseded_by_memory_ids %}
-                    <br>Superseded By: <code>{{ entry.superseded_by_memory_ids | join(', ') }}</code>
-                {% endif %}
+            <!-- Lifecycle Badge -->
+            <div class="flex-col items-end ml-sm">
+              <span class="type-label-cat color-dim mb-xs">status</span>
+              {% set ls = entry.lifecycle_status|lower %}
+              {% set disp = 'deleted' if ls == 'tombstoned' else ls %}
+              <span class="badge lifecycle-{{ ls }}" role="status">{{ disp }}</span>
             </div>
-
-            <div class="evidence-links" style="margin-top: 0.5rem; font-size: 0.9em;">
-                <strong>Evidence:</strong>
-                <ul style="margin: 0; padding-left: 1.5rem;">
-                    {% for ev in entry.evidence %}
-                        <li>
-                            <a href="#" hx-get="/htmx/takes/{{ ev.take_id }}" hx-target="#evidence-drawer-container" style="text-decoration: underline; color: blue;">
-                                {{ ev.take_id }}
-                            </a>
-                            ({{ ev.source_application }}) - <em>{{ ev.evidence_role }}</em>
-                            {% if ev.is_deleted %}<span style="color: red;">(Deleted)</span>{% endif %}
-
-                            {% if not ev.is_deleted %}
-                            <button class="revoke-btn"
-                                    style="margin-left: 10px; color: red; background: none; border: none; cursor: pointer; font-size: 0.8em; text-decoration: underline;"
-                                    hx-delete="/htmx/takes/{{ ev.take_id }}"
-                                    hx-confirm="Are you sure you want to revoke this evidence?"
-                                    hx-target="closest li"
-                                    hx-swap="outerHTML">
-                                Revoke
-                            </button>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            {% set is_active = (entry.lifecycle_status == 'ACTIVE' or (entry.lifecycle_status.name and entry.lifecycle_status.name == 'ACTIVE') or (entry.lifecycle_status.value and entry.lifecycle_status.value == 'ACTIVE')) %}
-            {% if is_active %}
-            <div class="correction-box" style="margin-top: 1rem; padding: 0.5rem; background: #fafafa; border-radius: 4px;">
-                <strong style="font-size: 0.9em;">Correct Memory</strong>
-                <form hx-post="/htmx/memories/{{ entry.memory_id }}/correct" hx-target="#timeline-results" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                    <input type="hidden" name="project_id" value="{{ timeline.project.id }}">
-                    <input type="text" name="corrected_value" placeholder="Corrected value" required class="form-input">
-                    <input type="text" name="note" placeholder="Optional note" class="form-input">
-                    <button type="submit" class="btn" style="padding: 0.25rem 0.5rem;">Correct</button>
-                </form>
-            </div>
-            {% endif %}
-
+          </div>
         </div>
-    {% endfor %}
-</div>
 
-<!-- Drawer Container -->
-<div id="evidence-drawer-container"></div>
+        <div class="type-body-lg color-primary mb-sm">
+          {{ entry.subject }} {{ entry.predicate }} {{ entry.object_value }}
+        </div>
+
+        <div class="flex gap-md type-code-ts color-dim mb-md">
+          <span>{{ entry.created_at }}</span>
+          {% if entry.valid_from %}<span class="type-body-sm">valid from: {{ entry.valid_from }}</span>{% endif %}
+          {% if entry.valid_to %}<span class="type-body-sm">valid to: {{ entry.valid_to }}</span>{% endif %}
+        </div>
+
+        {% if entry.supersedes_memory_id or entry.superseded_by_memory_ids %}
+        <div class="flex-col gap-xs mb-md">
+          {% if entry.supersedes_memory_id %}
+            <div class="type-body-sm color-muted">supersedes <span class="type-code-id">{{ entry.supersedes_memory_id }}</span></div>
+          {% endif %}
+          {% for by_id in entry.superseded_by_memory_ids %}
+            <div class="type-body-sm color-muted">superseded by <span class="type-code-id">{{ by_id }}</span></div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="type-label-cat color-dim uppercase mb-sm mt-md">evidence</div>
+        <div class="flex-col gap-sm mb-lg">
+          {% for ev in entry.evidence %}
+            <div class="flex items-center gap-md" id="evidence-row-{{ ev.take_id }}">
+              <button class="take-id-chip {% if ev.is_deleted %}deleted{% endif %}" hx-get="/htmx/takes/{{ ev.take_id }}" hx-target="#evidence-drawer-container" aria-label="Inspect source: {{ ev.take_id }}">
+                {{ ev.take_id }} {% if ev.is_deleted %}<span class="deleted-text">(deleted)</span>{% endif %}
+              </button>
+              <span class="type-body-sm color-muted">{{ ev.source_application }}</span>
+              <span class="type-body-sm color-dim italic">{{ ev.evidence_role }}</span>
+              {% if not ev.is_deleted %}
+                <button hx-delete="/htmx/takes/{{ ev.take_id }}" hx-confirm="Are you sure you want to revoke this evidence?" hx-target="#evidence-row-{{ ev.take_id }}" hx-swap="outerHTML" class="btn-destructive ml-auto" aria-label="Revoke evidence: {{ ev.take_id }}">revoke</button>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if entry.lifecycle_status == 'ACTIVE' %}
+        <form hx-post="/htmx/memories/{{ entry.memory_id }}/correct" hx-target="#timeline-results" class="bg-surface-3 border-hairline radius-md p-md mt-md">
+          <div class="type-label-cat color-muted mb-sm">correct this memory</div>
+          <div class="flex items-center gap-sm">
+            <input type="hidden" name="project_id" value="{{ timeline.project.id }}">
+            <input type="text" name="corrected_value" required placeholder="corrected value" class="flex-grow">
+            <input type="text" name="note" placeholder="optional note" class="flex-grow">
+            <button type="submit" class="btn-secondary" hx-disabled-elt="this">submit correction</button>
+          </div>
+        </form>
+        {% endif %}
+
+      </div>
+    {% endfor %}
+  {% endif %}
 {% endif %}

@@ -1,75 +1,85 @@
-<!-- User Question Echo -->
+{% if error %}
+<div class="chat-bubble error">
+  <div class="query-badge service_error" role="status">
+    <span class="prefix">!</span> service unavailable
+  </div>
+  <div class="type-body-md color-rose mb-md">
+    Kivi is currently unable to reach its reasoning service. Check your configuration and try again.
+  </div>
+  <button type="button" class="btn-secondary" onclick="const f = document.querySelector('input[name=question]') || document.querySelector('input[name=focus]'); if (f) f.focus();">try again</button>
+  <div id="retry-loading" class="htmx-indicator type-body-sm color-muted mt-sm">retrying...</div>
+</div>
+{% elif response %}
 <div class="chat-bubble user">
-    <p>{{ question }}</p>
+  <div class="type-body-md color-primary">{{ question }}</div>
 </div>
 
-<!-- Kivi Response -->
 <div class="chat-bubble bot">
-    {% if error %}
-        <div class="status-badge status-error">SERVICE ERROR</div>
-        <p>{{ error }}</p>
-    {% else %}
-        {% if response.status == "ANSWERED" %}
-            <div style="margin-bottom: 1rem;">
-                {{ response.answer }}
-            </div>
-            {% if response.claims %}
-            <div style="border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
-                <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;">Evidence & Claims</div>
-                {% for claim in response.claims %}
-                <div class="claim-box">
-                    <span>{{ claim.claim_text }}</span>
-                    <div style="margin-top: 0.25rem;">
-                        {% for take_id in claim.supporting_take_ids %}
-                        <button hx-get="/htmx/takes/{{ take_id }}" 
-                                hx-target="#evidence-drawer"
-                                class="take-btn">
-                            {{ take_id }}
-                        </button>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-        {% elif response.status == "NO_EVIDENCE" %}
-            <div class="status-badge status-no-evidence">NO EVIDENCE</div>
-            <p>I do not have any valid, project-scoped evidence to answer this question.</p>
-
-        {% elif response.status == "NEEDS_CLARIFICATION" %}
-            <div class="status-badge status-needs-clarification">NEEDS CLARIFICATION</div>
-            <p>The project scope is ambiguous. Please select or state a specific project.</p>
-
-        {% elif response.status == "CONFLICTING_EVIDENCE" %}
-            <div class="status-badge status-conflicting">CONFLICTING EVIDENCE</div>
-            <p>{{ response.answer }}</p>
-            {% if response.claims %}
-            <div style="margin-top: 1rem;">
-                {% for claim in response.claims %}
-                <div class="claim-box" style="background: var(--orange-bg); border-color: var(--orange-border);">
-                    <span style="color: var(--orange);">{{ claim.claim_text }}</span>
-                    <div style="margin-top: 0.25rem;">
-                        {% for take_id in claim.supporting_take_ids %}
-                        <button hx-get="/htmx/takes/{{ take_id }}" hx-target="#evidence-drawer" class="take-btn" style="background: #fed7aa; color: #9a3412;">
-                            {{ take_id }}
-                        </button>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-        {% elif response.status == "SERVICE_ERROR" %}
-            <div class="status-badge status-error">SERVICE ERROR</div>
-            <p>The service is currently unavailable or misconfigured.</p>
-        {% endif %}
-
-        <!-- Metadata footer -->
-        <div class="meta-footer">
-            <span>Latency: {{ response.end_to_end_latency_ms }}ms</span>
-            <span>Tokens: {{ response.input_tokens|default(0) }} in / {{ response.output_tokens|default(0) }} out</span>
+  {% if response.status == 'ANSWERED' %}
+    <div class="type-body-lg color-primary mb-md">{{ response.answer }}</div>
+    {% if response.claims %}
+      <div class="type-label-cat color-dim uppercase mt-lg">evidence and claims</div>
+      {% for claim in response.claims %}
+        <div class="claim-box">
+          <div class="type-body-md color-secondary mb-sm">{{ claim.claim_text }}</div>
+          <div>
+            {% for tid in claim.supporting_take_ids %}
+              <button class="take-id-chip" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">
+                {{ tid }}
+              </button>
+            {% endfor %}
+          </div>
         </div>
+      {% endfor %}
     {% endif %}
+  {% elif response.status == 'NO_EVIDENCE' %}
+    <div class="query-badge no_evidence" role="status">
+      <span class="prefix">—</span> no evidence
+    </div>
+    <div class="type-body-lg color-primary">I don't have any valid, project-scoped evidence to answer this question.</div>
+  {% elif response.status == 'NEEDS_CLARIFICATION' %}
+    <div class="query-badge needs_clarification" role="status">
+      <span class="prefix">?</span> needs clarification
+    </div>
+    <div class="type-body-lg color-primary">The project scope isn't clear. Please choose a specific project from the selector above.</div>
+  {% elif response.status == 'CONFLICTING_EVIDENCE' %}
+    <div class="query-badge conflicting_evidence" role="status">
+      <span class="prefix">↔</span> conflicting evidence
+    </div>
+    {% if response.answer %}
+      <div class="type-body-md color-muted mb-md">Kivi found conflicting evidence: {{ response.answer }}</div>
+    {% endif %}
+    {% if response.claims %}
+      {% for claim in response.claims %}
+        <div class="claim-box conflict">
+          <div class="type-body-md mb-sm">{{ claim.claim_text }}</div>
+          <div>
+            {% for tid in claim.supporting_take_ids %}
+              <button class="take-id-chip" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">
+                {{ tid }}
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+
+  <!-- Response Footer -->
+  <div class="response-footer mt-lg pt-sm">
+    <div class="flex gap-md">
+      {% if response.retrieval_latency_ms != None %}
+        <span>retrieval: {{ response.retrieval_latency_ms }} ms</span>
+      {% endif %}
+      {% if response.end_to_end_latency_ms != None %}
+        <span>completed in: {{ response.end_to_end_latency_ms }} ms</span>
+      {% endif %}
+    </div>
+    <div class="flex gap-md">
+      {% if response.input_tokens != None and response.output_tokens != None %}
+        <span>{{ response.input_tokens }} in / {{ response.output_tokens }} out</span>
+      {% endif %}
+    </div>
+  </div>
 </div>
+{% endif %}

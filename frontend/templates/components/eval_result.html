@@ -1,59 +1,93 @@
 {% if error %}
-<div class="error-box" style="color: red;">
-    <p>Error: {{ error }}</p>
-</div>
-{% elif not run %}
-<div class="error-box">
-    <p>No evaluation runs found.</p>
-</div>
-{% else %}
-<div class="eval-dashboard" style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
-    <h3>Run ID: {{ run.run_id }} ({{ run.mode }})</h3>
-    <p style="font-size: 0.85em; color: #666;">Started: {{ run.started_at.strftime('%Y-%m-%d %H:%M:%S') }} | Cases: {{ run.case_count }}</p>
-
-    <div class="metrics-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: #f9f9f9; padding: 1rem; border-radius: 4px;">
-        <div><strong>Pass Rate:</strong> {{ "%.1f"|format(run.metrics.pass_rate * 100) }}% ({{ run.metrics.passed }}/{{ run.metrics.total_cases }})</div>
-        <div><strong>Answer Correctness:</strong> {{ "%.1f"|format(run.metrics.answer_correctness * 100) }}%</div>
-        <div><strong>Abstention Precision:</strong> {{ "%.1f"|format(run.metrics.abstention_precision * 100) }}%</div>
-        <div><strong>Abstention Recall:</strong> {{ "%.1f"|format(run.metrics.abstention_recall * 100) }}%</div>
-        <div><strong>Conflict Detection:</strong> {{ "%.1f"|format(run.metrics.conflict_detection_accuracy * 100) }}%</div>
-        <div><strong>Project Scope Acc:</strong> {{ "%.1f"|format(run.metrics.project_scope_accuracy * 100) }}%</div>
-        <div><strong>Decision Status Acc:</strong> {{ "%.1f"|format(run.metrics.decision_status_accuracy * 100) }}%</div>
-        <div><strong>Temporal Correction:</strong> {{ "%.1f"|format(run.metrics.temporal_correction_accuracy * 100) }}%</div>
-        <div><strong>Provenance Coverage:</strong> {{ "%.1f"|format(run.metrics.provenance_coverage * 100) }}%</div>
-        <div><strong>Deletion Integrity:</strong> {{ "%.1f"|format(run.metrics.deletion_integrity * 100) }}%</div>
+<div class="type-body-md color-dim">Could not load evaluation results.</div>
+{% elif run %}
+<div class="card mb-lg">
+  <div class="flex justify-between items-center mb-md">
+    <div class="flex items-center gap-sm">
+      <span class="type-code-id color-dim">{{ run.run_id }}</span>
+      <span class="type-label-pill bg-surface-3 color-secondary radius-sm px-xs">{{ run.mode }}</span>
     </div>
-
-    <h4 style="margin-top: 1rem;">Integrity Violations</h4>
-    <ul style="color: red; font-size: 0.9em;">
-        <li>Cross Project Leakage: {{ run.metrics.cross_project_leakage_count }}</li>
-        <li>Deleted Memory Resurrection: {{ run.metrics.deleted_memory_resurrection_count }}</li>
-        <li>Invalid Citation: {{ run.metrics.invalid_citation_count }}</li>
-        <li>Rejected Proposal Promotion: {{ run.metrics.rejected_proposal_promotion_count }}</li>
-        <li>Fabricated Answer: {{ run.metrics.fabricated_answer_count }}</li>
-    </ul>
-
-    <h4 style="margin-top: 1rem;">Individual Case Inspection</h4>
-    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 0.5rem;">
-        {% for case in run.cases %}
-            <div style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #eee;">
-                <strong><a href="#" hx-get="/htmx/evaluate/cases/{{ case.case_id }}" hx-target="#eval-case-container">{{ case.case_id }}</a></strong> - {{ case.category }}
-                <span style="color: {{ 'green' if case.passed else 'red' }}; float: right;">{{ "PASS" if case.passed else "FAIL" }}</span>
-                <p style="margin: 0.2rem 0; font-size: 0.9em;">Q: {{ case.question }}</p>
-
-                {% if not case.passed %}
-                <p style="margin: 0.2rem 0; font-size: 0.8em; color: red;">Failures: {{ case.failure_reasons | join(', ') }}</p>
-                {% endif %}
-
-                <div style="font-size: 0.8em; color: #555;">
-                    Takes:
-                    {% for tid in case.supporting_take_ids %}
-                        <a href="#" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer-container" style="text-decoration: underline;">{{ tid }}</a>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endfor %}
+    <div class="flex-col items-end">
+      <span class="type-code-ts color-dim">{{ run.started_at }}</span>
+      <span class="type-body-sm color-muted">{{ run.case_count }} cases</span>
     </div>
-    <div id="eval-case-container"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Metrics Grid -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);" class="mb-lg">
+    {% set m = run.metrics %}
+    <div><div class="type-label-cat color-dim">pass rate</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.pass_rate * 100) }}%</div></div>
+    <div><div class="type-label-cat color-dim">answer correctness</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.answer_correctness * 100) }}%</div></div>
+    <div><div class="type-label-cat color-dim">abstention precision</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.abstention_precision * 100) }}%</div></div>
+    <div><div class="type-label-cat color-dim">abstention recall</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.abstention_recall * 100) }}%</div></div>
+    <div><div class="type-label-cat color-dim">conflict detection</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.conflict_detection_accuracy * 100) }}%</div></div>
+    <div><div class="type-label-cat color-dim">project scope accuracy</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.project_scope_accuracy * 100) }}%</div></div>
+    <div><div class="type-label-cat color-dim">decision status accuracy</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.decision_status_accuracy * 100) }}%</div></div>
+    <div><div class="type-label-cat color-dim">temporal correction</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.temporal_correction_accuracy * 100) }}%</div></div>
+    <div><div class="type-label-cat color-dim">provenance coverage</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.provenance_coverage * 100) }}%</div></div>
+    <div><div class="type-label-cat color-dim">deletion integrity</div><div class="type-body-md color-primary">{{ "%.1f"|format(m.deletion_integrity * 100) }}%</div></div>
+
+    <div><div class="type-label-cat color-dim">retrieval p50 / p95</div><div class="type-body-md color-primary">{{ m.retrieval_latency_p50_ms }} / {{ m.retrieval_latency_p95_ms }} ms</div></div>
+    <div><div class="type-label-cat color-dim">end-to-end p50 / p95</div><div class="type-body-md color-primary">{{ m.end_to_end_latency_p50_ms }} / {{ m.end_to_end_latency_p95_ms }} ms</div></div>
+
+    <div><div class="type-label-cat color-dim">database growth</div><div class="type-body-md color-primary">{{ m.database_growth_bytes }} B</div></div>
+    <div><div class="type-label-cat color-dim">tokens used (in / out)</div><div class="type-body-md color-primary">{{ m.input_tokens }} / {{ m.output_tokens }}</div></div>
+    {% if m.estimated_cost_usd != None %}
+    <div><div class="type-label-cat color-dim">estimated cost</div><div class="type-body-md color-primary">${{ "%.4f"|format(m.estimated_cost_usd) }}</div></div>
+    {% endif %}
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Integrity Violations -->
+  <div class="type-label-cat color-dim uppercase mb-sm">integrity violations</div>
+  {% set has_viols = (m.cross_project_leakage_count > 0) or (m.deleted_memory_resurrection_count > 0) or (m.invalid_citation_count > 0) or (m.rejected_proposal_promotion_count > 0) or (m.fabricated_answer_count > 0) %}
+
+  {% if has_viols %}
+    <div class="flex-col gap-xs mb-md">
+      {% if m.cross_project_leakage_count > 0 %}<div class="flex justify-between"><span class="type-body-sm color-secondary">cross-project leakage</span><span class="type-body-md color-rose">{{ m.cross_project_leakage_count }}</span></div>{% endif %}
+      {% if m.deleted_memory_resurrection_count > 0 %}<div class="flex justify-between"><span class="type-body-sm color-secondary">deleted-memory resurrection</span><span class="type-body-md color-rose">{{ m.deleted_memory_resurrection_count }}</span></div>{% endif %}
+      {% if m.invalid_citation_count > 0 %}<div class="flex justify-between"><span class="type-body-sm color-secondary">invalid citations</span><span class="type-body-md color-rose">{{ m.invalid_citation_count }}</span></div>{% endif %}
+      {% if m.rejected_proposal_promotion_count > 0 %}<div class="flex justify-between"><span class="type-body-sm color-secondary">rejected-proposal promotion</span><span class="type-body-md color-rose">{{ m.rejected_proposal_promotion_count }}</span></div>{% endif %}
+      {% if m.fabricated_answer_count > 0 %}<div class="flex justify-between"><span class="type-body-sm color-secondary">fabricated answers</span><span class="type-body-md color-rose">{{ m.fabricated_answer_count }}</span></div>{% endif %}
+    </div>
+  {% else %}
+    <div class="type-body-sm color-accent mb-md">No integrity violations detected.</div>
+  {% endif %}
+
+  <div class="divider"></div>
+
+  <!-- Cases List -->
+  <div class="type-label-cat color-dim uppercase mb-sm">cases</div>
+  <div style="max-height: 320px; overflow-y: auto;" class="flex-col gap-sm pr-sm">
+    {% for case in run.cases %}
+      <div class="bg-surface-3 p-sm border-hairline radius-sm">
+        <div class="flex justify-between items-center mb-xs">
+          <button class="type-code-id bg-transparent border-none color-primary cursor-pointer" style="padding:0;" hx-get="/htmx/evaluate/cases/{{ case.case_id }}" hx-target="#eval-case-container">{{ case.case_id }}</button>
+          <div class="flex items-center gap-sm">
+            <span class="type-label-pill bg-surface-2 color-muted px-xs radius-sm">{{ case.category }}</span>
+            {% if case.passed %}
+              <span class="color-accent bold type-body-sm">pass</span>
+            {% else %}
+              <span class="color-rose bold type-body-sm">fail</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="type-body-sm color-secondary text-truncate" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ case.question }}</div>
+        {% if not case.passed and case.failure_reasons %}
+          <div class="type-body-sm color-muted mt-xs">{{ case.failure_reasons|join(', ') }}</div>
+        {% endif %}
+        {% if case.supporting_take_ids %}
+          <div class="mt-xs">
+          {% for tid in case.supporting_take_ids %}
+            <button class="take-id-chip" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer-container" aria-label="Inspect source: {{ tid }}">{{ tid }}</button>
+          {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
 </div>
 {% endif %}

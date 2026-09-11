@@ -1,14 +1,9 @@
 {% if error %}
-<div class="error-box" style="color: red; border: 1px solid red; padding: 1rem;">
-    Error assigning scope: {{ error }}
+<div class="card border-failed">
+  <div class="type-body-sm color-rose">{{ error }}</div>
 </div>
 {% else %}
-<div class="success-box" style="color: green; border: 1px solid green; padding: 1rem;">
-    <p>Scope assigned successfully!</p>
-    {% if result.ignored_reason %}
-        <p>Take ignored: {{ result.ignored_reason }}</p>
-    {% else %}
-        <p>Created {{ result.memories|length }} memories.</p>
-    {% endif %}
+<div class="card success">
+  <div class="type-body-sm color-muted">Scoped to {{ result.take.project_id }}. Take {{ result.take.id }} is now being processed.</div>
 </div>
 {% endif %}

@@ -1,54 +1,36 @@
 {% extends "base.html" %}
 
 {% block sidebar %}
-<div class="panel">
-    <h2 class="panel-title">Evidence Drawer</h2>
-    <div id="evidence-drawer" class="evidence-drawer-content">
-        Click on a citation in the answer to view the source evidence here.
-    </div>
+<div id="evidence-drawer">
+  {% include "components/evidence_drawer.html" %}
 </div>
 {% endblock %}
 
 {% block content %}
-<div style="display: flex; flex-direction: column; height: 100%;">
-    <!-- Chat Display Area -->
-    <div class="chat-container" id="chat-history">
-        <!-- Initial greeting -->
-        <div class="chat-bubble bot">
-            <p>Hello. I am Kivi. You can ask me questions about your projects.</p>
-        </div>
-        
-        <!-- Loading Indicator -->
-        <div id="loading-indicator" class="htmx-indicator chat-bubble bot">
-            <span>Retrieving evidence...</span>
-        </div>
-    </div>
+<h1 class="type-headline-md mb-lg">ask kivi</h1>
 
-    <!-- Input Area -->
-    <div class="input-area">
-        <form hx-post="/htmx/ask" 
-              hx-target="#chat-history" 
-              hx-swap="beforeend" 
-              hx-indicator="#loading-indicator"
-              hx-on::after-request="if (event.detail.successful) document.getElementById('question-input').value = ''">
-            
-            <div class="form-row">
-                <label for="project_id" class="form-label">Project Scope:</label>
-                <select id="project_id" name="project_id" class="form-select">
-                    <option value="">-- No specific project (Auto/Detect) --</option>
-                    {% for project in projects %}
-                    <option value="{{ project.id }}">{{ project.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-row">
-                <input type="text" id="question-input" name="question" required
-                       placeholder="Ask Hey Kivi..." 
-                       class="form-input flex-grow">
-                <button type="submit" class="btn">Ask</button>
-            </div>
-        </form>
-    </div>
+<div id="chat-history" class="chat-container">
+  <div class="chat-bubble bot">
+    <div class="type-body-lg color-primary">Hello. I'm Kivi. Ask me anything about your projects.</div>
+  </div>
 </div>
+
+<form class="input-area" hx-post="/htmx/ask" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#ask-loading" hx-on::after-request="if(event.detail.successful) this.elements.question.value=''">
+  <div class="form-row flex items-center gap-md">
+    <label for="project_id" class="type-label-cat color-muted">project</label>
+    <select id="project_id" name="project_id">
+      <option value="">— no specific project —</option>
+      {% for proj in projects %}
+      <option value="{{ proj.id }}">{{ proj.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row flex items-center gap-md mt-sm">
+    <input type="text" name="question" required class="flex-grow w-full" placeholder="ask kivi...">
+    <button type="submit" class="btn-primary" hx-disabled-elt="this">ask</button>
+  </div>
+  <div id="ask-loading" class="htmx-indicator mt-sm type-body-sm color-muted pulse" aria-live="polite">
+    retrieving evidence...
+  </div>
+</form>
 {% endblock %}

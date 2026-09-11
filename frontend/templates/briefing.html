@@ -1,49 +1,36 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block sidebar %}
-<div class="panel">
-    <h2 class="panel-title">Evidence Drawer</h2>
-    <div id="evidence-drawer" class="evidence-drawer-content">
-        Click on a citation in the briefing to view the source evidence here.
-    </div>
+<div id="evidence-drawer">
+  {% include "components/evidence_drawer.html" %}
 </div>
 {% endblock %}
 
 {% block content %}
-<div style="display: flex; flex-direction: column; height: 100%;">
-    <div class="chat-container" id="briefing-history">
-        <div class="chat-bubble bot">
-            <p>Request a grounded briefing for a project.</p>
-        </div>
-        <div id="loading-indicator" class="htmx-indicator chat-bubble bot">
-            <span>Retrieving briefing...</span>
-        </div>
-    </div>
+<h1 class="type-headline-md mb-lg">briefing</h1>
 
-    <div class="input-area">
-        <form hx-post="/htmx/briefing"
-              hx-target="#briefing-history"
-              hx-swap="beforeend"
-              hx-indicator="#loading-indicator"
-              hx-on::after-request="if (event.detail.successful) document.getElementById('focus-input').value = ''">
-
-            <div class="form-row">
-                <label for="project_id" class="form-label">Project Scope:</label>
-                <select id="project_id" name="project_id" class="form-select" required>
-                    <option value="" disabled selected>-- Choose Project --</option>
-                    {% for project in projects %}
-                    <option value="{{ project.id }}">{{ project.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-row">
-                <input type="text" id="focus-input" name="focus" required
-                       placeholder="e.g. Provide the current project state and unresolved items."
-                       class="form-input flex-grow">
-                <button type="submit" class="btn">Generate Briefing</button>
-            </div>
-        </form>
-    </div>
+<div id="chat-history" class="chat-container">
+  <div class="chat-bubble bot">
+    <div class="type-body-lg color-primary">Request a grounded briefing for a project.</div>
+  </div>
 </div>
+
+<form class="input-area" hx-post="/htmx/briefing" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#briefing-loading" hx-on::after-request="if(event.detail.successful) this.elements.focus.value=''">
+  <div class="form-row flex items-center gap-md">
+    <label for="project_id" class="type-label-cat color-muted">project</label>
+    <select id="project_id" name="project_id" required>
+      <option value="" disabled selected>— choose a project —</option>
+      {% for proj in projects %}
+      <option value="{{ proj.id }}">{{ proj.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row flex items-center gap-md mt-sm">
+    <input type="text" name="focus" class="flex-grow w-full" placeholder="e.g., provide the current project state and unresolved items.">
+    <button type="submit" class="btn-primary" hx-disabled-elt="this">generate briefing</button>
+  </div>
+  <div id="briefing-loading" class="htmx-indicator mt-sm type-body-sm color-muted pulse" aria-live="polite">
+    retrieving evidence...
+  </div>
+</form>
 {% endblock %}

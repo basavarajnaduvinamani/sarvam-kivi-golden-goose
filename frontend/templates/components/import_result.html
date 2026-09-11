@@ -1,35 +1,44 @@
-{% if error %}
-<div class="error-box" style="color: red; border: 1px solid red; padding: 1rem; border-radius: 4px;">
-    <strong>Import Error:</strong> {{ error }}
-</div>
-{% elif result %}
-<div class="success-box" style="border: 1px solid {{ 'red' if result.ingested == 0 else ('orange' if result.failed > 0 else 'green') }}; padding: 1rem; border-radius: 4px;">
-    {% if result.ingested == 0 and result.failed > 0 %}
-        <h3 style="color: red;">Import Failed</h3>
-    {% elif result.failed > 0 %}
-        <h3 style="color: orange;">Partial Success</h3>
+{% if result %}
+  {% set border_class = 'border-success' %}
+  {% set header_text = 'import complete' %}
+
+  {% if result.failed > 0 %}
+    {% if result.ingested > 0 %}
+      {% set border_class = 'border-partial' %}
+      {% set header_text = 'partially imported' %}
     {% else %}
-        <h3 style="color: green;">Import Successful</h3>
+      {% set border_class = 'border-failed' %}
+      {% set header_text = 'import failed' %}
     {% endif %}
-    <ul style="list-style-type: none; padding: 0; margin: 0.5rem 0;">
-        <li><strong>Total Records:</strong> {{ result.total }}</li>
-        <li><strong>Successfully Ingested:</strong> {{ result.ingested }}</li>
-        <li><strong>Memories Created:</strong> {{ result.memories_created }}</li>
-        <li><strong>Unscoped Records:</strong> {{ result.unscoped }}</li>
-        <li><strong style="color: {{ 'red' if result.failed > 0 else 'green' }};">Failed:</strong> {{ result.failed }}</li>
+  {% endif %}
+
+  <div class="card {{ border_class }}">
+    <div class="type-headline-sm color-primary mb-md">{{ header_text }}</div>
+    <ul class="type-body-md color-secondary mb-lg" style="padding-left:1.5rem; margin-top:0;">
+      <li>Total records: {{ result.total }}</li>
+      <li>Successfully ingested: {{ result.ingested }}</li>
+      <li>Memories created: {{ result.memories_created }}</li>
+      <li>Unscoped records: {{ result.unscoped }}</li>
+      <li>Failed records: {{ result.failed }}</li>
     </ul>
 
     {% if result.failed > 0 %}
-        <h4 style="margin-top: 1rem;">Per-record Failures:</h4>
-        <ul style="margin: 0; padding-left: 1.5rem; font-size: 0.9em; color: #d32f2f;">
-            {% for err in result.errors %}
-                <li>
-                    <strong>Take:</strong> {{ err.take_id }} <br>
-                    <strong>Type:</strong> {{ err.error_type }} <br>
-                    <strong>Detail:</strong> {{ err.detail }}
-                </li>
-            {% endfor %}
-        </ul>
+      <div class="type-label-cat color-dim uppercase mb-sm">failure details</div>
+      <div class="flex-col gap-sm" style="max-height:200px; overflow-y:auto;">
+      {% for err in result.errors %}
+        <div class="bg-surface-3 p-sm radius-sm border-hairline flex items-center justify-between">
+          <span class="type-code-id color-muted">{{ err.take_id }}</span>
+          {% set et = err.error_type|lower %}
+          {% if et == 'ingestionerror' %}
+            <span class="type-body-sm color-rose">could not process record</span>
+          {% elif et == 'providerunavailable' %}
+            <span class="type-body-sm color-rose">service unavailable</span>
+          {% else %}
+            <span class="type-body-sm color-rose">processing error</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+      </div>
     {% endif %}
-</div>
+  </div>
 {% endif %}

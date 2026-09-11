@@ -1,25 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="timeline-container" style="padding: 1rem;">
-    <h2>Project Memory Timeline</h2>
-    <div style="margin-bottom: 1rem;">
-        <label for="project_id" class="form-label">Select Project:</label>
-        <select name="project_id" id="project_id" class="form-select">
-            <option value="" disabled selected>-- Choose a Project --</option>
-            {% for project in projects %}
-                <option value="{{ project.id }}">{{ project.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
+<h1 class="type-headline-md mb-lg">project timeline</h1>
 
-    <div id="timeline-results">
-        <p class="empty-state">Select a project to view its memory timeline.</p>
-    </div>
+<div class="mb-lg">
+  <select id="project_id" class="w-full" style="max-width:300px;">
+    <option value="" disabled selected>— choose a project —</option>
+    {% for proj in projects %}
+    <option value="{{ proj.id }}">{{ proj.name }}</option>
+    {% endfor %}
+  </select>
 </div>
+
+<div id="timeline-results">
+  <div class="type-body-md color-dim text-center mt-lg">
+    Select a project to view its memory timeline.
+  </div>
+</div>
+
+<div id="evidence-drawer-container" class="mt-xl">
+  {% include "components/evidence_drawer.html" %}
+</div>
+
 <script>
-    document.getElementById('project_id').addEventListener('change', function(e) {
-        htmx.ajax('GET', '/htmx/timeline/' + e.target.value, '#timeline-results');
-    });
+document.getElementById('project_id').addEventListener('change', function(e) {
+    htmx.ajax('GET', '/htmx/timeline/' + e.target.value, '#timeline-results');
+});
 </script>
 {% endblock %}
