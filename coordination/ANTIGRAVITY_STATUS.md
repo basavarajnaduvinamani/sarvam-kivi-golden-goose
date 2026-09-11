@@ -19,9 +19,10 @@ Antigravity updates this file after each pushed checkpoint. Codex does not edit 
 
 - **Automated Tests**: Passed the complete test suite (51/51 tests passing using an isolated `tmp_pytest` temporary directory for test artifacts; note this only isolates pytest temporary files, not a fresh Python environment). Proved real JSONL upload, success/partial/failure headings, evaluation field mapping, and masked exceptions.
 - **Browser Automation**: Confirmed successful manual interaction with Playwright locally:
-  - `/timeline`: Seeded a disposable database with a real memory and evidence. Successfully rendered timeline for the selected project and confirmed no invalid requests.
-  - Evidence Drawer & Revoke: Opened the evidence drawer and successfully tested revoking the disposable evidence.
-  - `/import-eval`: uploaded two-line JSONL. Confirmed honest reporting of total failure (2 failures) because the records referenced an unknown project `test_proj`, not because of offline providers.
+  - `/timeline`: Created a disposable SQLite database, ran `alembic upgrade head`, and seeded it using the real production `ingest_take` service (using `GoldExtractor` and `DeterministicEmbedder`) rather than manual database rows. Successfully rendered the timeline for `Project Harbor` and confirmed no invalid requests.
+  - Evidence Drawer & Revoke: Opened the evidence drawer for `take_0001` and successfully tested revoking it.
+  - Revoke Tombstone: Refreshed the timeline and successfully verified the deleted/invalidated state.
+  - `/import-eval`: Uploaded a two-line JSONL. Confirmed honest reporting of total failure (2 failures) as dictated by the application's normal offline provider configuration.
   - `/import-eval`: Fetched the committed latest evaluation. Confirmed exactly 132/132 cases rendered.
   - Case Drill-down: Clicked a case and confirmed correct display of Expected vs Actual fields, Takes, metrics, and cost details.
   - Console: Zero 404, 422, 500, failed assets, or uncaught errors.
@@ -30,6 +31,7 @@ Antigravity updates this file after each pushed checkpoint. Codex does not edit 
 - Timeline: ![Timeline Selection](../../evidence/browser/remaining-surfaces/screenshot_timeline.png)
 - Evidence Drawer: ![Evidence Drawer](../../evidence/browser/remaining-surfaces/screenshot_evidence.png)
 - Revoke Action: ![Revoke Action](../../evidence/browser/remaining-surfaces/screenshot_revoke.png)
+- Revoke Tombstone: ![Revoke Tombstone](../../evidence/browser/remaining-surfaces/screenshot_tombstone.png)
 - Import JSONL Upload: ![Upload Handling](../../evidence/browser/remaining-surfaces/screenshot_upload.png)
 - Evaluation Overview: ![Eval 132 Cases](../../evidence/browser/remaining-surfaces/screenshot_eval.png)
 - Case Drill-down: ![Case Fields](../../evidence/browser/remaining-surfaces/screenshot_case.png)
