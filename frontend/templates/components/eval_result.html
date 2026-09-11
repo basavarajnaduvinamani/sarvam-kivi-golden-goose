@@ -1,4 +1,8 @@
-{% if not run %}
+{% if error %}
+<div class="error-box" style="color: red;">
+    <p>Error: {{ error }}</p>
+</div>
+{% elif not run %}
 <div class="error-box">
     <p>No evaluation runs found.</p>
 </div>

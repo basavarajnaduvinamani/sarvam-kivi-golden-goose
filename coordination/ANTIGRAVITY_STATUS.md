@@ -11,14 +11,14 @@ Antigravity updates this file after each pushed checkpoint. Codex does not edit 
   - Added global navigation for "Ask", "Timeline", and "Import & Eval" in `base.html`.
   - Implemented the **Project Memory Timeline** view mapping exactly to `TimelineEntryRead` and `TimelineEvidenceRead`.
   - Implemented the timeline evidence drawer and explicit **Revoke** interaction calling `DELETE /takes/{take_id}`.
-  - Implemented the **Import and Evaluation View** with a file upload form parsing JSONL and calling `import_takes`.
-  - **Connected Evaluation endpoints**: Wired `/evaluate/run`, `/evaluate/latest`, and `/evaluate/cases/{case_id}` to real backend evaluation services after merging Codex's `evaluation-core` work.
-  - Added tests covering Timeline rendering, Import form rendering, and Revoke control rendering.
+  - Implemented the **Import and Evaluation View** with a file upload form parsing JSONL genuinely using `TakeCreate.model_validate_json()` with fallback to JSON array.
+  - **Connected Evaluation endpoints**: Wired `/evaluate/run`, `/evaluate/latest`, and `/evaluate/cases/{case_id}` to real backend evaluation services using the precise `EvaluationCaseResultRead` schema.
+  - Hidden internal backend exceptions from UI, gracefully rendering user-facing messages.
 
 ## Verification
 
-- **Automated Tests**: Passed all 46 frontend test cases (including evaluation integration tests and mock tests).
-- **Browser Automation**: Confirmed successful manual loading of `/timeline` with project selector, and `/import-eval` with the correct evaluation dashboard forms rendering correctly via the local server.
+- **Automated Tests**: Passed all 50 frontend test cases. Proved 1) real two-line JSONL upload parses properly, 2) evaluation case drill-down renders the correct fields (Takes, duration, costs), 3) timeline project selector has no invalid HTMX `hx-get` targets, 4) unexpected exceptions are masked.
+- **Browser Automation**: Confirmed successful rendering of timeline project selections, `/import-eval` JSONL upload functionality, and evaluation case drill-down metrics.
 
 ## Current work
 

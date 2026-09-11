@@ -371,3 +371,89 @@ def test_htmx_revoke_take(mock_delete, mock_session):
     assert response.status_code == 200
     assert "Revoked successfully!" in response.text
 
+
+
+def test_import_jsonl_parsing(mock_session):
+    test_app = create_test_app()
+    test_app.dependency_overrides[get_session] = override_get_session(mock_session)
+    client = TestClient(test_app)
+    
+    # Valid two line JSONL
+    jsonl_content = (
+        '{"take_id": "test1", "project_id": "test-project", "raw_asr": "hi", "formatted_text": "hi", "source_application": "Test", "event_ts": "2026-09-10T09:30:00Z"}\n'
+        '{"take_id": "test2", "project_id": "test-project", "raw_asr": "hello", "formatted_text": "hello", "source_application": "Test", "event_ts": "2026-09-10T09:35:00Z"}\n'
+    )
+    
+    with patch('frontend.router.import_takes') as mock_import_takes:
+        from backend.kivi.schemas import CorpusImportResult
+        mock_import_takes.return_value = CorpusImportResult(
+            total=2, ingested=2, memories_created=2, unscoped=0, failed=0, errors=[]
+        )
+        files = {"corpus_file": ("test.jsonl", jsonl_content.encode('utf-8'), "application/json")}
+        response = client.post("/htmx/import", files=files)
+        assert response.status_code == 200
+        # Check that import_takes was called with 2 records
+        records_arg = mock_import_takes.call_args[0][1]
+        assert len(records_arg) == 2
+        assert records_arg[0].take_id == "test1"
+        assert records_arg[1].take_id == "test2"
+
+def test_eval_case_renders_fields():
+    test_app = create_test_app()
+    client = TestClient(test_app)
+    
+    with patch('backend.kivi.evaluation.get_case_result') as mock_get_case:
+        from backend.kivi.schemas import EvaluationCaseResultRead
+        mock_get_case.return_value = EvaluationCaseResultRead(
+            case_id="case_123",
+            category="Temporal",
+            description="Test",
+            project_id="test-project",
+            question="What?",
+            passed=True,
+            expected_status="ANSWERED",
+            actual_status="ANSWERED",
+            expected={"contains": ["yes"], "excludes": ["no"], "supporting_take_ids": ["take_1"]},
+            actual={"answer": "yes", "supporting_take_ids": ["take_1"]},
+            failure_reasons=[],
+            supporting_take_ids=["take_1"],
+            relevant_memory_ids=["mem_1"],
+            duration_ms=150,
+            input_tokens=100,
+            output_tokens=50,
+            estimated_cost_usd=0.05
+        )
+        
+        response = client.get("/htmx/evaluate/cases/case_123")
+        assert response.status_code == 200
+        html = response.text
+        assert "case_123" in html
+        assert "Project ID:</strong> test-project" in html
+        assert "Contains: yes" in html
+        assert "Excludes: no" in html
+        assert "Takes: take_1" in html
+        assert "Answer: yes" in html
+        assert "Relevant Memories: mem_1" in html
+        assert "Duration: 150 ms" in html
+        assert "Input Tokens: 100" in html
+        assert "Output Tokens: 50" in html
+        assert "Cost: $0.05" in html
+
+def test_timeline_selector_no_invalid_hxget():
+    client = TestClient(app)
+    response = client.get("/timeline")
+    assert response.status_code == 200
+    html = response.text
+    # Proves the invalid hx-get is absent and only the JS handler handles it
+    assert 'hx-get="/htmx/timeline"' not in html
+    assert "document.getElementById('project_id').addEventListener('change'" in html
+    
+def test_unexpected_exceptions_are_masked():
+    client = TestClient(app)
+    with patch('backend.kivi.evaluation.get_latest_run', side_effect=Exception("SUPER SECRET EXCEPTION")):
+        response = client.get("/htmx/evaluate/latest")
+        assert response.status_code == 200
+        html = response.text
+        assert "SUPER SECRET EXCEPTION" not in html
+        assert "An internal error occurred" in html
+
