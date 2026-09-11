@@ -1,6 +1,7 @@
 {% if error %}
-<div class="error-box">
-    <p>Error loading timeline: {{ error }}</p>
+<div class="error-box" style="color: red; border: 1px solid red; padding: 1rem;">
+    <p>Error: {{ error }}</p>
+    <button onclick="htmx.ajax('GET', '/htmx/timeline/{{ project_id }}', '#timeline-results')">Back to Timeline</button>
 </div>
 {% elif timeline %}
 <h3>Timeline for {{ timeline.project.name }}</h3>
@@ -11,7 +12,7 @@
     {% endif %}
 
     {% for entry in timeline.entries %}
-        <div class="memory-card" style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px;">
+        <div class="memory-card" style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px; {% if corrected_memory_id and entry.memory_id == corrected_memory_id %}border-color: green; background: #f0fff0;{% endif %}">
             <div class="memory-header" style="display: flex; justify-content: space-between;">
                 <strong>{{ entry.memory_type }}</strong>
                 <div>
@@ -47,7 +48,6 @@
                             ({{ ev.source_application }}) - <em>{{ ev.evidence_role }}</em>
                             {% if ev.is_deleted %}<span style="color: red;">(Deleted)</span>{% endif %}
 
-                            <!-- Revoke Control -->
                             {% if not ev.is_deleted %}
                             <button class="revoke-btn"
                                     style="margin-left: 10px; color: red; background: none; border: none; cursor: pointer; font-size: 0.8em; text-decoration: underline;"
@@ -62,11 +62,24 @@
                     {% endfor %}
                 </ul>
             </div>
+
+            {% set is_active = (entry.lifecycle_status == 'ACTIVE' or (entry.lifecycle_status.name and entry.lifecycle_status.name == 'ACTIVE') or (entry.lifecycle_status.value and entry.lifecycle_status.value == 'ACTIVE')) %}
+            {% if is_active %}
+            <div class="correction-box" style="margin-top: 1rem; padding: 0.5rem; background: #fafafa; border-radius: 4px;">
+                <strong style="font-size: 0.9em;">Correct Memory</strong>
+                <form hx-post="/htmx/memories/{{ entry.memory_id }}/correct" hx-target="#timeline-results" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <input type="hidden" name="project_id" value="{{ timeline.project.id }}">
+                    <input type="text" name="corrected_value" placeholder="Corrected value" required class="form-input">
+                    <input type="text" name="note" placeholder="Optional note" class="form-input">
+                    <button type="submit" class="btn" style="padding: 0.25rem 0.5rem;">Correct</button>
+                </form>
+            </div>
+            {% endif %}
+
         </div>
     {% endfor %}
 </div>
 
 <!-- Drawer Container -->
 <div id="evidence-drawer-container"></div>
-
 {% endif %}

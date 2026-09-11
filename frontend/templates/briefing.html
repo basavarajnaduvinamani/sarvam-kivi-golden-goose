@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+<div class="panel">
+    <h2 class="panel-title">Evidence Drawer</h2>
+    <div id="evidence-drawer" class="evidence-drawer-content">
+        Click on a citation in the briefing to view the source evidence here.
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; height: 100%;">
+    <div class="chat-container" id="briefing-history">
+        <div class="chat-bubble bot">
+            <p>Request a grounded briefing for a project.</p>
+        </div>
+        <div id="loading-indicator" class="htmx-indicator chat-bubble bot">
+            <span>Retrieving briefing...</span>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <form hx-post="/htmx/briefing"
+              hx-target="#briefing-history"
+              hx-swap="beforeend"
+              hx-indicator="#loading-indicator"
+              hx-on::after-request="if (event.detail.successful) document.getElementById('focus-input').value = ''">
+
+            <div class="form-row">
+                <label for="project_id" class="form-label">Project Scope:</label>
+                <select id="project_id" name="project_id" class="form-select" required>
+                    <option value="" disabled selected>-- Choose Project --</option>
+                    {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-row">
+                <input type="text" id="focus-input" name="focus" required
+                       placeholder="e.g. Provide the current project state and unresolved items."
+                       class="form-input flex-grow">
+                <button type="submit" class="btn">Generate Briefing</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
