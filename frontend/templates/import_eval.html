@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="import-eval-container" style="padding: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Import View -->
+    <div class="import-section">
+        <h2>Import Corpus</h2>
+        <form id="import-form" hx-post="/htmx/import" hx-encoding="multipart/form-data" hx-target="#import-results" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px;">
+            <div style="margin-bottom: 1rem;">
+                <label for="corpus_file">Select JSONL Corpus File:</label><br>
+                <input type="file" id="corpus_file" name="corpus_file" accept=".json,.jsonl" required style="margin-top: 0.5rem;">
+            </div>
+            <button type="submit" class="submit-btn" style="padding: 0.5rem 1rem;">Import</button>
+        </form>
+
+        <div id="import-results" style="margin-top: 1rem;">
+            <!-- Import results will render here -->
+        </div>
+    </div>
+
+    <!-- Evaluation View -->
+    <div class="eval-section">
+        <h2>Evaluation Dashboard</h2>
+        <div style="margin-bottom: 1rem; display: flex; gap: 1rem;">
+            <button class="submit-btn" style="padding: 0.5rem 1rem;"
+                    hx-get="/htmx/evaluate/latest"
+                    hx-target="#eval-results">
+                Fetch Latest Evaluation
+            </button>
+            <form hx-post="/htmx/evaluate/run" hx-target="#eval-results" style="margin: 0;">
+                <input type="hidden" name="mode" value="deterministic">
+                <button type="submit" class="submit-btn" style="padding: 0.5rem 1rem; background-color: #28a745;">
+                    Run Deterministic Eval
+                </button>
+            </form>
+        </div>
+
+        <div id="eval-results">
+            <p class="empty-state">Click to fetch the latest evaluation metrics.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Drawer Container for evidence links -->
+<div id="evidence-drawer-container"></div>
+
+{% endblock %}

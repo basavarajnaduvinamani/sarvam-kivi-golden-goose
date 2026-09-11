@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="timeline-container" style="padding: 1rem;">
+    <h2>Project Memory Timeline</h2>
+    <div style="margin-bottom: 1rem;">
+        <label for="project_id" class="form-label">Select Project:</label>
+        <select name="project_id" id="project_id" class="form-select">
+            <option value="" disabled selected>-- Choose a Project --</option>
+            {% for project in projects %}
+                <option value="{{ project.id }}">{{ project.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div id="timeline-results">
+        <p class="empty-state">Select a project to view its memory timeline.</p>
+    </div>
+</div>
+<script>
+    document.getElementById('project_id').addEventListener('change', function(e) {
+        htmx.ajax('GET', '/htmx/timeline/' + e.target.value, '#timeline-results');
+    });
+</script>
+{% endblock %}
