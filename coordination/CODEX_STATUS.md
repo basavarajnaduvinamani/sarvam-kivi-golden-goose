@@ -6,6 +6,8 @@ Branch: `codex/evaluation-core`
 
 Contract checkpoint: `7a234eb`
 
+Evaluation implementation checkpoint: `6e22386`
+
 Milestone state: `READY_FOR_REVIEW`
 
 ## Completed
