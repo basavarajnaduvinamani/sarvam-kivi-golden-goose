@@ -17,19 +17,22 @@ Antigravity updates this file after each pushed checkpoint. Codex does not edit 
 
 ## Verification
 
-- **Automated Tests**: Passed the complete test suite (50/50 tests passing in isolated environment). Proved real JSONL upload, evaluation field mapping, and masked exceptions.
+- **Automated Tests**: Passed the complete test suite (51/51 tests passing using an isolated `tmp_pytest` temporary directory for test artifacts; note this only isolates pytest temporary files, not a fresh Python environment). Proved real JSONL upload, success/partial/failure headings, evaluation field mapping, and masked exceptions.
 - **Browser Automation**: Confirmed successful manual interaction with Playwright locally:
-  - `/timeline`: successfully rendered timeline for selected project. No invalid requests.
-  - `/import-eval`: uploaded two-line JSONL. Confirmed honest reporting of 2 failures due to offline embedding provider.
+  - `/timeline`: Seeded a disposable database with a real memory and evidence. Successfully rendered timeline for the selected project and confirmed no invalid requests.
+  - Evidence Drawer & Revoke: Opened the evidence drawer and successfully tested revoking the disposable evidence.
+  - `/import-eval`: uploaded two-line JSONL. Confirmed honest reporting of total failure (2 failures) because the records referenced an unknown project `test_proj`, not because of offline providers.
   - `/import-eval`: Fetched the committed latest evaluation. Confirmed exactly 132/132 cases rendered.
   - Case Drill-down: Clicked a case and confirmed correct display of Expected vs Actual fields, Takes, metrics, and cost details.
   - Console: Zero 404, 422, 500, failed assets, or uncaught errors.
-  
+
 ## Screenshots and Recordings
-- Timeline: ![Timeline Selection](file:///C:/Users/Viraj/.gemini/antigravity/brain/ff04c462-74ba-4d0f-b3dc-21146faec414/screenshot_timeline.png)
-- Import JSONL Upload: ![Upload Handling](file:///C:/Users/Viraj/.gemini/antigravity/brain/ff04c462-74ba-4d0f-b3dc-21146faec414/screenshot_upload.png)
-- Evaluation Overview: ![Eval 132 Cases](file:///C:/Users/Viraj/.gemini/antigravity/brain/ff04c462-74ba-4d0f-b3dc-21146faec414/screenshot_eval.png)
-- Case Drill-down: ![Case Fields](file:///C:/Users/Viraj/.gemini/antigravity/brain/ff04c462-74ba-4d0f-b3dc-21146faec414/screenshot_case.png)
+- Timeline: ![Timeline Selection](../../evidence/browser/remaining-surfaces/screenshot_timeline.png)
+- Evidence Drawer: ![Evidence Drawer](../../evidence/browser/remaining-surfaces/screenshot_evidence.png)
+- Revoke Action: ![Revoke Action](../../evidence/browser/remaining-surfaces/screenshot_revoke.png)
+- Import JSONL Upload: ![Upload Handling](../../evidence/browser/remaining-surfaces/screenshot_upload.png)
+- Evaluation Overview: ![Eval 132 Cases](../../evidence/browser/remaining-surfaces/screenshot_eval.png)
+- Case Drill-down: ![Case Fields](../../evidence/browser/remaining-surfaces/screenshot_case.png)
 
 - The evaluation integrations are finished, tested, and fully aligned with the Codex backend! Awaiting the final go-ahead for final documentation and submission packaging.
 

@@ -456,3 +456,42 @@ def test_unexpected_exceptions_are_masked():
         html = response.text
         assert "SUPER SECRET EXCEPTION" not in html
         assert "An internal error occurred" in html
+
+
+def test_import_result_headings(mock_session):
+    test_app = create_test_app()
+    client = TestClient(test_app)
+
+    # 1. Total Success
+    with patch('frontend.router.import_takes') as mock_import_takes:
+        from backend.kivi.schemas import CorpusImportResult
+        mock_import_takes.return_value = CorpusImportResult(
+            total=2, ingested=2, memories_created=2, unscoped=0, failed=0, errors=[]
+        )
+        files = {"corpus_file": ("test.jsonl", b'[]', "application/json")}
+        response = client.post("/htmx/import", files=files)
+        assert "Import Successful" in response.text
+        assert "Partial Success" not in response.text
+        assert "Import Failed" not in response.text
+
+    # 2. Partial Success
+    with patch('frontend.router.import_takes') as mock_import_takes:
+        mock_import_takes.return_value = CorpusImportResult(
+            total=2, ingested=1, memories_created=1, unscoped=0, failed=1, errors=[]
+        )
+        files = {"corpus_file": ("test.jsonl", b'[]', "application/json")}
+        response = client.post("/htmx/import", files=files)
+        assert "Partial Success" in response.text
+        assert "Import Successful" not in response.text
+        assert "Import Failed" not in response.text
+
+    # 3. Total Failure
+    with patch('frontend.router.import_takes') as mock_import_takes:
+        mock_import_takes.return_value = CorpusImportResult(
+            total=2, ingested=0, memories_created=0, unscoped=0, failed=2, errors=[]
+        )
+        files = {"corpus_file": ("test.jsonl", b'[]', "application/json")}
+        response = client.post("/htmx/import", files=files)
+        assert "Import Failed" in response.text
+        assert "Import Successful" not in response.text
+        assert "Partial Success" not in response.text
