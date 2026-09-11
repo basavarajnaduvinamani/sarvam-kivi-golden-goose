@@ -19,6 +19,9 @@ from .schemas import (
     BriefingRequest,
     CorpusImportResult,
     DeleteResult,
+    EvaluationCaseResultRead,
+    EvaluationRunRead,
+    EvaluationRunRequest,
     ProjectCreate,
     ProjectRead,
     ProjectTimelineResponse,
@@ -176,6 +179,35 @@ def create_app(
             bundle.embedder,
             bundle.answerer,
         )
+
+    @app.post("/evaluate/run", response_model=EvaluationRunRead)
+    def evaluate(payload: EvaluationRunRequest) -> EvaluationRunRead:
+        from .evaluation import run_evaluation
+
+        try:
+            return run_evaluation(payload.mode)
+        except (RuntimeError, ProviderUnavailable) as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    @app.get("/evaluate/latest", response_model=EvaluationRunRead)
+    def latest_evaluation() -> EvaluationRunRead:
+        from .evaluation import get_latest_run
+
+        try:
+            return get_latest_run()
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/evaluate/cases/{case_id}", response_model=EvaluationCaseResultRead)
+    def evaluation_case(case_id: str) -> EvaluationCaseResultRead:
+        from .evaluation import get_case_result
+
+        try:
+            return get_case_result(case_id)
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="evaluation case not found") from exc
 
     @app.delete("/takes/{take_id}", response_model=DeleteResult)
     def remove_take(take_id: str, session: Session = Depends(session_dependency)) -> DeleteResult:

@@ -1,7 +1,9 @@
 # Backend and Frontend Integration Contract
 
-Contract version: `1.1`  
-Source implementation: `backend/kivi/schemas.py`  
+Contract version: `1.1`
+
+Source implementation: `backend/kivi/schemas.py`
+
 Frozen for the September 11 remaining interface surfaces
 
 ## Ask request

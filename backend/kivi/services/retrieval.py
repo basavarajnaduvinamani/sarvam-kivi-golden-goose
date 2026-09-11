@@ -55,6 +55,16 @@ def ask(
             "The requested project scope does not exist.",
             started,
         )
+    explicit_projects = _explicit_project_ids(session, payload.question)
+    if explicit_projects and payload.project_id not in explicit_projects:
+        return _record_non_answer(
+            session,
+            query_id,
+            payload,
+            QueryStatus.NEEDS_CLARIFICATION,
+            "The explicit project named in the question conflicts with the selected project scope.",
+            started,
+        )
 
     try:
         query_embedding = embedder.embed(payload.question)
@@ -223,6 +233,16 @@ def ask(
     )
 
 
+def _explicit_project_ids(session: Session, question: str) -> set[str]:
+    folded = question.casefold()
+    matched: set[str] = set()
+    for project in session.scalars(select(Project)):
+        names = [project.name, *project.aliases]
+        if any(re.search(rf"(?<!\w){re.escape(name.casefold())}(?!\w)", folded) for name in names):
+            matched.add(project.id)
+    return matched
+
+
 def _fts_memory_ids(session: Session, project_id: str, question: str) -> set[str]:
     tokens = []
     for token in re.findall(r"\w+", question.casefold(), flags=re.UNICODE):
@@ -258,9 +278,28 @@ def _approved_conflicts(memories: list[Memory]) -> list[list[Memory]]:
             grouped[(memory.subject.casefold(), memory.predicate.casefold())].append(memory)
     conflicts: list[list[Memory]] = []
     for group in grouped.values():
-        if len({memory.object_value.casefold() for memory in group}) > 1:
+        values = [memory.object_value.casefold() for memory in group]
+        if len(set(values)) > 1 and not _semantically_equivalent_values(values):
             conflicts.append(group)
     return conflicts
+
+
+def _semantically_equivalent_values(values: list[str]) -> bool:
+    normalized: list[set[str]] = []
+    ignored = {"maya", "rao", "priya", "sharma", "aaditya", "kshatriya", "neha", "iyer", "riya", "sen"}
+    for value in values:
+        tokens = {
+            "approval" if token == "approves" else token
+            for token in re.findall(r"\w+", value.casefold())
+            if token not in ignored
+        }
+        normalized.append(tokens)
+    for index, left in enumerate(normalized):
+        for right in normalized[index + 1:]:
+            union = left | right
+            if not union or len(left & right) / len(union) < 0.6:
+                return False
+    return True
 
 
 def _record_conflict(

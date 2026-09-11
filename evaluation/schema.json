@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Kivi deterministic evaluation case",
+  "type": "object",
+  "required": ["case_id", "category", "description", "project_id", "question", "setup", "expected", "metric_tags"],
+  "properties": {
+    "case_id": {"type": "string", "pattern": "^eval_[0-9]{3}$"},
+    "category": {"type": "string", "minLength": 1},
+    "description": {"type": "string", "minLength": 1},
+    "project_id": {"type": ["string", "null"]},
+    "question": {"type": "string", "minLength": 1},
+    "setup": {
+      "type": "object",
+      "required": ["action", "take_id"],
+      "properties": {
+        "action": {"enum": ["ask", "delete_rebuild_ask", "delete_restart_ask", "service_error", "inject_conflict"]},
+        "take_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "expected": {
+      "type": "object",
+      "required": ["status", "contains", "excludes", "supporting_take_ids"],
+      "properties": {
+        "status": {"enum": ["ANSWERED", "NO_EVIDENCE", "NEEDS_CLARIFICATION", "CONFLICTING_EVIDENCE", "SERVICE_ERROR"]},
+        "contains": {"type": "array", "items": {"type": "string"}},
+        "excludes": {"type": "array", "items": {"type": "string"}},
+        "supporting_take_ids": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "metric_tags": {"type": "array", "items": {"type": "string"}, "minItems": 1}
+  },
+  "additionalProperties": false
+}
