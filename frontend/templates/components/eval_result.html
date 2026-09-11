@@ -40,13 +40,13 @@
                 <strong><a href="#" hx-get="/htmx/evaluate/cases/{{ case.case_id }}" hx-target="#eval-case-container">{{ case.case_id }}</a></strong> - {{ case.category }}
                 <span style="color: {{ 'green' if case.passed else 'red' }}; float: right;">{{ "PASS" if case.passed else "FAIL" }}</span>
                 <p style="margin: 0.2rem 0; font-size: 0.9em;">Q: {{ case.question }}</p>
-                
+
                 {% if not case.passed %}
                 <p style="margin: 0.2rem 0; font-size: 0.8em; color: red;">Failures: {{ case.failure_reasons | join(', ') }}</p>
                 {% endif %}
 
                 <div style="font-size: 0.8em; color: #555;">
-                    Takes: 
+                    Takes:
                     {% for tid in case.supporting_take_ids %}
                         <a href="#" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer-container" style="text-decoration: underline;">{{ tid }}</a>
                     {% endfor %}

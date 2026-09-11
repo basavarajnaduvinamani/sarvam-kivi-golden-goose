@@ -8,7 +8,7 @@
     <span style="color: {{ 'green' if case.passed else 'red' }}; font-weight: bold; font-size: 1.2em;">
         {{ "PASS" if case.passed else "FAIL" }}
     </span>
-    
+
     <p><strong>Project ID:</strong> {{ case.project_id or "None" }}</p>
     <p><strong>Question:</strong> {{ case.question }}</p>
 

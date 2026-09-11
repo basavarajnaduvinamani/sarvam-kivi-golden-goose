@@ -19,7 +19,7 @@
                     <span class="badge lifecycle-badge" style="background: #eef; padding: 2px 6px; border-radius: 4px;">{{ entry.lifecycle_status }}</span>
                 </div>
             </div>
-            
+
             <p style="margin: 0.5rem 0;">
                 <span class="subject">{{ entry.subject }}</span>
                 <span class="predicate">{{ entry.predicate }}</span>
@@ -46,10 +46,10 @@
                             </a>
                             ({{ ev.source_application }}) - <em>{{ ev.evidence_role }}</em>
                             {% if ev.is_deleted %}<span style="color: red;">(Deleted)</span>{% endif %}
-                            
+
                             <!-- Revoke Control -->
                             {% if not ev.is_deleted %}
-                            <button class="revoke-btn" 
+                            <button class="revoke-btn"
                                     style="margin-left: 10px; color: red; background: none; border: none; cursor: pointer; font-size: 0.8em; text-decoration: underline;"
                                     hx-delete="/htmx/takes/{{ ev.take_id }}"
                                     hx-confirm="Are you sure you want to revoke this evidence?"

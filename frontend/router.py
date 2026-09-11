@@ -69,7 +69,7 @@ async def htmx_import_corpus(request: Request, corpus_file: UploadFile = File(..
     import logging
     content = await corpus_file.read()
     records = []
-    
+
     try:
         text_content = content.decode('utf-8').strip()
         if text_content.startswith('['):
@@ -89,7 +89,7 @@ async def htmx_import_corpus(request: Request, corpus_file: UploadFile = File(..
                     # Provide safe user-facing error containing line number
                     logging.exception(f"Validation failed on line {i+1}")
                     return templates.TemplateResponse(request=request, name="components/import_result.html", context={"error": f"Validation failed on line {i+1}. Please check the corpus format."})
-                    
+
     except Exception as e:
         logging.exception("Failed to parse corpus upload")
         return templates.TemplateResponse(request=request, name="components/import_result.html", context={"error": "Failed to parse the uploaded file. Ensure it is valid JSON or JSONL."})

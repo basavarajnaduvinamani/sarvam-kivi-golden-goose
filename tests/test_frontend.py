@@ -302,7 +302,7 @@ def test_htmx_import_success(mock_import_takes, mock_session):
     test_app = create_test_app()
     test_app.dependency_overrides[get_session] = override_get_session(mock_session)
     client = TestClient(test_app)
-    
+
     files = {"corpus_file": ("test.jsonl", b'[{"take_id": "test1", "project_id": "test-project", "raw_asr": "hi", "formatted_text": "hi", "source_application": "Test", "event_ts": "2026-09-10T09:30:00Z"}]', "application/json")}
     response = client.post("/htmx/import", files=files)
     assert response.status_code == 200
@@ -377,13 +377,13 @@ def test_import_jsonl_parsing(mock_session):
     test_app = create_test_app()
     test_app.dependency_overrides[get_session] = override_get_session(mock_session)
     client = TestClient(test_app)
-    
+
     # Valid two line JSONL
     jsonl_content = (
         '{"take_id": "test1", "project_id": "test-project", "raw_asr": "hi", "formatted_text": "hi", "source_application": "Test", "event_ts": "2026-09-10T09:30:00Z"}\n'
         '{"take_id": "test2", "project_id": "test-project", "raw_asr": "hello", "formatted_text": "hello", "source_application": "Test", "event_ts": "2026-09-10T09:35:00Z"}\n'
     )
-    
+
     with patch('frontend.router.import_takes') as mock_import_takes:
         from backend.kivi.schemas import CorpusImportResult
         mock_import_takes.return_value = CorpusImportResult(
@@ -401,7 +401,7 @@ def test_import_jsonl_parsing(mock_session):
 def test_eval_case_renders_fields():
     test_app = create_test_app()
     client = TestClient(test_app)
-    
+
     with patch('backend.kivi.evaluation.get_case_result') as mock_get_case:
         from backend.kivi.schemas import EvaluationCaseResultRead
         mock_get_case.return_value = EvaluationCaseResultRead(
@@ -423,7 +423,7 @@ def test_eval_case_renders_fields():
             output_tokens=50,
             estimated_cost_usd=0.05
         )
-        
+
         response = client.get("/htmx/evaluate/cases/case_123")
         assert response.status_code == 200
         html = response.text
@@ -447,7 +447,7 @@ def test_timeline_selector_no_invalid_hxget():
     # Proves the invalid hx-get is absent and only the JS handler handles it
     assert 'hx-get="/htmx/timeline"' not in html
     assert "document.getElementById('project_id').addEventListener('change'" in html
-    
+
 def test_unexpected_exceptions_are_masked():
     client = TestClient(app)
     with patch('backend.kivi.evaluation.get_latest_run', side_effect=Exception("SUPER SECRET EXCEPTION")):
