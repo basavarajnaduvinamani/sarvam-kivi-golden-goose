@@ -2,45 +2,42 @@
 
 Last updated: September 11, 2026
 
-Branch: `codex/evaluation-core`
+Branch: `codex/functional-product-core`
 
-Contract checkpoint: `7a234eb`
+Contract version: `1.2`
 
-Evaluation implementation checkpoint: `6e22386`
-
-Milestone state: `READY_FOR_REVIEW`
+Milestone state: `BACKEND_CHECKPOINT_READY`
 
 ## Completed
 
-- Frozen the timeline, briefing, import, evaluation-run, evaluation-summary, and case-detail contracts in integration contract version 1.1.
-- Added a project timeline service and briefing endpoint using the existing typed answer and citation contract.
-- Added explicit named-project disagreement detection before retrieval to prevent selected-scope leakage.
-- Added semantically equivalent approved-value handling to avoid false conflicts while preserving genuine schedule conflicts.
-- Generated and committed exactly 132 deterministic cases across 11 categories and all five typed answer states.
-- Built an offline evaluator that imports all 500 corpus records through the production ingestion service into an isolated migrated SQLite database.
-- Exercised project isolation, cross-application recovery, distributed evidence, corrections, epistemic safety, abstention, provenance, deletion after session restart and index rebuild, service failures, conflicts, multilingual identifiers, and preference precedence.
-- Added reviewer-facing evaluation routes and the `kivi evaluate --mode deterministic|candidate` CLI command.
-- Produced inspectable JSON and Markdown evaluation reports with category metrics, integrity violation counts, latency, storage growth, model usage, and cost.
-- Added regression coverage for the evaluator, generator, CLI modes, API reads, and explicit project-scope disagreement.
+- Preserved the completed evaluation, corpus, lifecycle, provenance, deletion, timeline, and briefing implementation from `main`.
+- Froze integration contract version 1.2 for explicit user corrections and unscoped-take confirmation.
+- Added a user-confirmed correction service that creates a new immutable Take and correction memory, preserves the original, records Take-ID evidence, and closes the superseded memory's validity interval.
+- Added explicit unscoped-take project confirmation without semantic scope inference.
+- Reused the existing extraction pipeline after project confirmation rather than creating memory through a parallel path.
+- Added API routes for listing unscoped takes, confirming project scope, and correcting active memories.
+- Added regression coverage for correction provenance, supersession, temporal validity, scoped processing, and reassignment rejection.
 
 ## Verification
 
-- Deterministic evaluation: 132 passed, 0 failed across 11 categories.
-- Corpus ingestion during evaluation: 500 records ingested through the real pipeline.
-- Integrity violations: 0 cross-project leaks, 0 deleted-memory resurrections, 0 invalid citations, 0 rejected-proposal promotions, 0 fabricated answers.
-- Complete pytest suite: 40 passed, 0 failed, 0 skipped, 2 dependency deprecation warnings.
-- Evaluation generator freshness check: passed.
-- Windows CLI evaluation and UTF-8 output: passed.
+- Focused contract and vertical-slice tests: 17 passed, 0 failed.
+- Complete pytest suite: 54 passed, 0 failed, 0 skipped, 2 dependency deprecation warnings.
 - Python compilation: passed.
+- `git diff --check`: passed.
 - Part One files: unchanged.
 
 ## Request to Antigravity
 
-1. Continue the Timeline and Import/Evaluation UI work from contract checkpoint `7a234eb` without changing frozen response fields.
-2. After the Codex evaluation implementation is merged, rebase onto `main` and connect the evaluation views to `/evaluate/run`, `/evaluate/latest`, and `/evaluate/cases/{case_id}`.
-3. Verify the project timeline against `/projects/{project_id}/timeline` and use the existing take-deletion endpoint for revoke actions.
-4. Run the complete suite and browser verification, then record exact evidence in `coordination/ANTIGRAVITY_STATUS.md`.
+After this branch is reviewed and merged:
+
+1. Read integration contract version 1.2 before editing frontend code.
+2. Add an unscoped inbox using `GET /takes?unscoped_only=true` and explicit `POST /takes/{take_id}/scope` confirmation.
+3. Add correction controls only to active timeline memories using `POST /memories/{memory_id}/correct`.
+4. Refresh the timeline after correction and visibly preserve the superseded memory beside the new correction and its Take-ID evidence.
+5. Add a grounded briefing interaction using the existing `POST /briefings` contract and the same five typed result states as Ask.
+6. Do not infer or preselect project scope from semantic similarity.
+7. Add frontend tests and browser evidence for all three interactions, then stop for Codex review.
 
 ## Stop Boundary
 
-The approved evaluation-core milestone is complete. No final documentation, clean-clone rehearsal, submission packaging, or later milestone work begins until the user explicitly resumes it.
+The critical Milestone 1 backend checkpoint is complete. No frontend implementation, visual redesign, candidate-provider run, documentation, or submission packaging begins until this checkpoint is reviewed and merged.
