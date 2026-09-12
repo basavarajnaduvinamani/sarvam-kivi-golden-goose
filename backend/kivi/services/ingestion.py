@@ -83,9 +83,7 @@ def create_memories_for_take(
     created: list[Memory] = []
     for candidate_index, candidate in enumerate(extraction_result.decision.memories):
         text_length = len(payload.formatted_text)
-        for evidence in candidate.evidence:
-            if evidence.span_end is not None and evidence.span_end > text_length:
-                raise IngestionError("evidence span exceeds formatted_text length")
+
         supersedes_memory_id = candidate.supersedes_memory_id
         if supersedes_memory_id is None and candidate.memory_type.value == "correction":
             matching_active = list(
@@ -136,11 +134,21 @@ def create_memories_for_take(
             supersedes_memory_id=supersedes_memory_id,
         )
         for evidence in candidate.evidence:
+            span_start = evidence.span_start
+            span_end = evidence.span_end
+            if span_start is not None and span_end is not None:
+                if span_start < 0 or span_start >= text_length or span_end > text_length:
+                    span_start = None
+                    span_end = None
+            else:
+                span_start = None
+                span_end = None
+
             memory.evidence_links.append(
                 MemoryEvidence(
                     take=take,
-                    span_start=evidence.span_start,
-                    span_end=evidence.span_end,
+                    span_start=span_start,
+                    span_end=span_end,
                     evidence_role=evidence.role,
                     is_required=evidence.required,
                     sufficiency_contribution=evidence.sufficiency_contribution,
