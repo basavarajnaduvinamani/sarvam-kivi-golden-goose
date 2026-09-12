@@ -66,7 +66,7 @@
         </div>
 
         {% if entry.lifecycle_status == 'ACTIVE' %}
-        <form hx-post="/htmx/memories/{{ entry.memory_id }}/correct" hx-target="#timeline-results" class="bg-surface-3 border-hairline radius-md p-md mt-md">
+        <form hx-post="/htmx/memories/{{ entry.memory_id }}/correct" hx-target="#timeline-results" class="mt-md" style="background-color: var(--color-surface-3); border: 1px solid var(--color-border-hairline); border-radius: var(--radius-md); padding: var(--space-md);">
           <div class="type-label-cat color-muted mb-sm">correct this memory</div>
           <div class="flex items-center gap-sm">
             <input type="hidden" name="project_id" value="{{ timeline.project.id }}">
