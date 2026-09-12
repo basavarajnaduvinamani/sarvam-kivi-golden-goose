@@ -114,13 +114,61 @@ Open [http://127.0.0.1:8000/inbox](http://127.0.0.1:8000/inbox) in a browser.
 4. Correct a timeline entry and observe how the original memory is superseded and a new active memory is generated.
 5. Revoke evidence from a memory and observe the results.
 
-## 8. Importing Another Corpus
+## 8. Importing an External Reviewer Corpus
 
-You can independently construct and import a small JSONL corpus conforming to the schema:
-```bash
-kivi corpus import path/to/your_corpus.jsonl
+The evaluator may translate its source records into this documented schema before import.
+
+### External JSONL Schema
+Each line in `external_takes.jsonl` is a JSON object with the following fields:
+- `take_id` (string): Unique identifier for the take.
+- `project_id` (string, nullable): ID of the project the take belongs to, or `null` if unassigned.
+- `raw_asr` (string): Raw speech-to-text transcript.
+- `formatted_text` (string): Formatted transcript with punctuation and casing.
+- `source_application` (string): Name of the source application.
+- `event_ts` (string): ISO 8601 timestamp with timezone.
+- `metadata` (object): Arbitrary JSON object for metadata.
+
+### External Project-Registry JSON Format
+`external_projects.json` must follow this JSON format:
+```json
+[
+  {
+    "id": "project-example",
+    "name": "Project Example",
+    "aliases": ["Example"]
+  }
+]
 ```
-> **Note:** As with the initial import, arbitrary corpus records require the configured OpenAI provider (`KIVI_MODEL_PROVIDER="openai"`) or matching committed gold labels in `corpus/gold_labels.jsonl`. Deterministic mode cannot parse arbitrary new text.
+
+### Mapping and Ingestion Rules
+- **Explicit mapping rule:** Every non-null `project_id` in an external take must match an imported registry ID. Do not infer project scope from semantic similarity. If scope is unknown, use `null`; the record enters Inbox and creates no semantic memory until a normal user assigns scope.
+- **Explicit provider rule:** Deterministic mode supports only committed gold-label fixtures. A novel reviewer corpus requires the configured OpenAI provider.
+
+### Execution Commands
+
+For a reviewer-provided 500-record corpus:
+
+**Windows (PowerShell):**
+```powershell
+$env:KIVI_MODEL_PROVIDER="openai"
+$env:OPENAI_API_KEY="your-api-key"
+kivi db migrate
+kivi corpus validate external_takes.jsonl
+kivi corpus import external_takes.jsonl --projects external_projects.json
+kivi inspect
+kivi serve
+```
+
+**macOS/Linux:**
+```bash
+export KIVI_MODEL_PROVIDER="openai"
+export OPENAI_API_KEY="your-api-key"
+kivi db migrate
+kivi corpus validate external_takes.jsonl
+kivi corpus import external_takes.jsonl --projects external_projects.json
+kivi inspect
+kivi serve
+```
 
 ## 9. Testing
 
