@@ -66,6 +66,13 @@ class ProviderBundle:
 
 def default_provider_bundle() -> ProviderBundle:
     settings = get_settings()
+    if settings.model_provider == "deterministic":
+        from .evaluation.providers import DeterministicAnswerer, DeterministicEmbedder, GoldExtractor
+        return ProviderBundle(
+            extractor=GoldExtractor(),
+            embedder=DeterministicEmbedder(),
+            answerer=DeterministicAnswerer(),
+        )
     if settings.model_provider != "openai" or not settings.openai_api_key:
         unavailable = UnavailableProvider()
         return ProviderBundle(extractor=unavailable, embedder=unavailable, answerer=unavailable)

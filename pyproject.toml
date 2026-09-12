@@ -35,5 +35,5 @@ packages = ["backend/kivi"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
-pythonpath = ["backend"]
+addopts = "-q --basetemp=var/pytest-tmp"
+pythonpath = ["backend", "."]
