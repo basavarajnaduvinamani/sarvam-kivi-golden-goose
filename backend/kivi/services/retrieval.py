@@ -286,12 +286,10 @@ def _approved_conflicts(memories: list[Memory]) -> list[list[Memory]]:
 
 def _semantically_equivalent_values(values: list[str]) -> bool:
     normalized: list[set[str]] = []
-    ignored = {"maya", "rao", "priya", "sharma", "aaditya", "kshatriya", "neha", "iyer", "riya", "sen"}
     for value in values:
         tokens = {
             "approval" if token == "approves" else token
             for token in re.findall(r"\w+", value.casefold())
-            if token not in ignored
         }
         normalized.append(tokens)
     for index, left in enumerate(normalized):

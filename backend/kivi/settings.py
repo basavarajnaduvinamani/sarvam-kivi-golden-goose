@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./var/kivi.db"
     model_provider: str = "openai"
-    llm_model: str = "gpt-5.6-luna"
+    llm_model: str = "gpt-4o"
     embedding_model: str = "text-embedding-3-small"
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
     llm_input_cost_per_million: float | None = None
