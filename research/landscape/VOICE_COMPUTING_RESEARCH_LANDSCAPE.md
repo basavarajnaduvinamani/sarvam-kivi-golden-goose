@@ -372,7 +372,7 @@ For a later learning/synthesis pass, the highest-yield sequence is:
 
 ### Supplied and project-local evidence
 
-- Supplied PDF: `C:\Users\Viraj\Downloads\2412.11272v2.pdf` (14 pages, arXiv v2 dated 21 April 2025).
+- Supplied PDF: `2412.11272v2.pdf` (14 pages, arXiv v2 dated 21 April 2025).
 - Empirical audit: `research/empirical_audit/KIVI_WINDOWS_AUDIT_REPORT.md`.
 - Evidence dossier: `research/empirical_audit/HANDS_ON_EVIDENCE_DOSSIER.md`.
 
