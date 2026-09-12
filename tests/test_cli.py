@@ -25,3 +25,28 @@ def test_corpus_validation_rejects_count_mismatch_and_duplicate_ids(tmp_path):
         load_corpus(path, 2)
     with pytest.raises(SystemExit, match="expected 500 records, found 2"):
         load_corpus(path, 500)
+
+
+def test_cli_serve_resolves_app_without_pythonpath(monkeypatch):
+    import sys
+    from fastapi import FastAPI
+    import uvicorn
+    from kivi.cli import main
+
+    captured = {}
+
+    def fake_run(app, host, port):
+        captured["app"] = app
+        captured["host"] = host
+        captured["port"] = port
+
+    monkeypatch.setattr(uvicorn, "run", fake_run)
+    monkeypatch.setattr(sys, "argv", ["kivi", "serve", "--port", "8005"])
+    monkeypatch.delenv("PYTHONPATH", raising=False)
+
+    main()
+
+    assert isinstance(captured["app"], FastAPI)
+    assert not isinstance(captured["app"], str)
+    assert captured["host"] == "127.0.0.1"
+    assert captured["port"] == 8005
