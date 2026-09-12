@@ -1,5 +1,7 @@
 # Kivi Semantic Memory System
 
+[![Cross-Platform CI](https://github.com/basavarajnaduvinamani/sarvam-kivi-golden-goose/actions/workflows/cross-platform.yml/badge.svg)](https://github.com/basavarajnaduvinamani/sarvam-kivi-golden-goose/actions/workflows/cross-platform.yml)
+
 **For multilingual knowledge workers who dictate decisions across desktop applications, Kivi is a voice-first, project-scoped memory that turns intentional speech into a traceable record of what was decided, revised, rejected, or left open.**
 
 Where ordinary dictation ends at formatted text inside an active application window, Kivi establishes durable semantic memory to power **Hey Kivi**—allowing users to recall project state, retrieve exact citations across applications, apply temporal corrections, and safely purge sensitive evidence.
@@ -19,6 +21,7 @@ This submission relies on observable behavior and reproducible data rather than 
 - **Reproducible Evaluation**: A [500-record JSONL corpus](corpus/kivi_500.jsonl) drives a [132-case deterministic evaluation suite](evaluation/cases.jsonl) proving zero leakage, zero resurrection, and zero citation failures.
 - **Empirical Grounding**: The product vision and architectural constraints respond directly to [46 live audit cases](research/empirical_audit/KIVI_WINDOWS_AUDIT_REPORT.md) performed on the Kivi Windows alpha application.
 - **Visual Verification**: The [browser gallery](evidence/browser/GALLERY.md) captures real local flows demonstrating strict lifecycle and provenance guarantees.
+- **Cross-platform reviewer path**: [GitHub Actions](https://github.com/basavarajnaduvinamani/sarvam-kivi-golden-goose/actions/workflows/cross-platform.yml) verifies the deterministic install, test, migrate, corpus import, and 132-case evaluation flow on Windows, Ubuntu, and macOS using Python 3.11.
 
 ---
 
