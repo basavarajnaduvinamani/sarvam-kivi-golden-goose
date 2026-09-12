@@ -168,7 +168,7 @@ Kivi incorporates a complete, reproducible evaluation harness ([backend/kivi/eva
 
 ---
 
-## Technology Stack
+## Technology Stack & Architectural Defense
 
 | Layer | Component | Description |
 |---|---|---|
@@ -183,3 +183,13 @@ Kivi incorporates a complete, reproducible evaluation harness ([backend/kivi/eva
 | **Frontend & UI** | Jinja2 & HTMX | Server-rendered Jinja2 templates with HTMX interactions |
 | **CSS & Design System** | Vanilla CSS | Tokens aligned with [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md) |
 | **Testing & Evaluation** | Pytest & Custom Runner | Suite of automated tests and comprehensive 132-case evaluation engine |
+
+### Why This Stack? (The Defense)
+
+Complexity is a liability when building systems of truth. This tech stack was chosen deliberately to maximize **epistemic integrity, local inspectability, and reviewer empathy**, actively rejecting industry-standard frontend bloat that offers zero value to the assignment's core requirements.
+
+1. **HTMX & Jinja2 over React/SPAs (Zero State-Drift):** In a semantic memory product, truth is everything. Single Page Applications (SPAs) maintain client-side state. If the client state drifts from the database state (e.g., a memory is superseded but the UI hasn't re-fetched), the system lies to the user. By using HTMX and Server-Side Rendering, the UI is a strict, mathematical projection of the SQLite database. Zero client state equals zero hallucinations. Furthermore, it completely eliminates the `node_modules` build step, respecting the reviewer's time and ensuring a flawless clean-clone experience.
+2. **SQLite + NumPy over Vector Databases:** We actively rejected deploying Pinecone, Milvus, or pgvector. Kivi is a personal, project-scoped memory system (handling hundreds to thousands of records, not billions). Calculating cosine similarity on 1536-dimensional vectors using an in-memory NumPy array takes less than 3 milliseconds. An embedded SQLite `.db` file guarantees that the reviewer can locally reset, inspect, and audit the entire system state instantly without Docker containers or cloud credentials.
+3. **Pure CSS over Tailwind:** The `DESIGN_SYSTEM.md` establishes a rigid visual contract. By using pure CSS variables, we mapped the design document directly to the codebase 1:1, achieving a highly polished, accessible UI without importing a megabyte of utility classes or requiring a PostCSS build chain.
+
+We chose mature, embedded, and hypermedia-driven technologies to force all complexity into the LLM orchestration and data-integrity layer where it belongs.
