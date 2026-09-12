@@ -7,29 +7,28 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="type-headline-md mb-lg">briefing</h1>
-
-<div id="chat-history" class="chat-container">
-  <div class="chat-bubble bot">
-    <div class="type-body-lg color-primary">Request a grounded briefing for a project.</div>
-  </div>
+<div class="intro">
+  <h1>Project Briefing</h1>
+  <p>Request a grounded briefing for a project.</p>
 </div>
 
-<form class="input-area" hx-post="/htmx/briefing" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#briefing-loading" hx-on::after-request="if(event.detail.successful) this.elements.focus.value=''">
-  <div class="form-row flex items-center gap-md">
-    <label for="project_id" class="type-label-cat color-muted">project</label>
-    <select id="project_id" name="project_id" required>
-      <option value="" disabled selected>— choose a project —</option>
-      {% for proj in projects %}
-      <option value="{{ proj.id }}">{{ proj.name }}</option>
-      {% endfor %}
-    </select>
+<div id="chat-history" class="conversation">
+</div>
+
+<form class="composer" hx-post="/htmx/briefing" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#briefing-loading" hx-on::after-request="if(event.detail.successful) this.elements.focus.value=''">
+  <input type="text" name="focus" placeholder="e.g., provide the current project state and unresolved items.">
+  <div class="composer-foot">
+    <span>Scoped to
+      <select id="project_id" name="project_id" required>
+        <option value="" disabled selected>— choose a project —</option>
+        {% for proj in projects %}
+        <option value="{{ proj.id }}">{{ proj.name }}</option>
+        {% endfor %}
+      </select>
+    </span>
+    <button type="submit" class="primary" hx-disabled-elt="this">generate briefing</button>
   </div>
-  <div class="form-row flex items-center gap-md mt-sm">
-    <input type="text" name="focus" class="flex-grow w-full" placeholder="e.g., provide the current project state and unresolved items.">
-    <button type="submit" class="btn-primary" hx-disabled-elt="this">generate briefing</button>
-  </div>
-  <div id="briefing-loading" class="htmx-indicator mt-sm type-body-sm color-muted pulse" aria-live="polite">
+  <div id="briefing-loading" class="htmx-indicator warning" aria-live="polite">
     retrieving evidence...
   </div>
 </form>

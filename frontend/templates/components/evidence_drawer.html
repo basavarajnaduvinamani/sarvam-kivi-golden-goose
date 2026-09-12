@@ -1,57 +1,61 @@
 {% if missing %}
-<aside class="evidence-drawer-inner" aria-label="Evidence inspector">
-  <div class="type-label-cat color-dim mb-xs uppercase">evidence</div>
-  <div class="card p-md type-body-sm color-rose text-center">
-    This source could not be found.
-  </div>
+<div class="drawer-overlay" hx-on:click="this.parentElement.innerHTML=''"></div>
+<aside class="drawer" aria-label="Evidence inspector">
+  <button class="drawer-close" hx-on:click="this.closest('#evidence-drawer').innerHTML=''" aria-label="Close drawer">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+  </button>
+  <h2>Source Details</h2>
+  <div class="drawer-file">Not found</div>
+  <p class="faded">This source could not be found.</p>
 </aside>
 {% elif not take %}
-<aside class="evidence-drawer-inner" aria-label="Evidence inspector">
-  <div class="type-label-cat color-dim mb-xs uppercase">evidence</div>
-  <div class="card p-md type-body-sm color-dim text-center">
-    Click a source citation to inspect the evidence here.
-  </div>
-</aside>
+<!-- empty state -->
 {% else %}
-<aside class="evidence-drawer-inner" aria-label="Evidence inspector">
-  <div class="type-label-cat color-dim mb-xs uppercase">evidence</div>
-  <div class="card p-md">
-    <div class="flex justify-between items-center mb-md">
-      <div class="type-label-action color-secondary">take details</div>
-      <div class="type-code-id bg-surface-3 color-dim border-hairline radius-sm px-xs py-2">{{ take.id }}</div>
-    </div>
+<div class="drawer-overlay" hx-on:click="this.parentElement.innerHTML=''"></div>
+<aside class="drawer" aria-label="Evidence inspector">
+  <button class="drawer-close" hx-on:click="this.closest('#evidence-drawer').innerHTML=''" aria-label="Close drawer">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+  </button>
+  <h2>Source Details</h2>
+  <div class="drawer-file">{{ take.source_application }}</div>
 
-    <div class="mb-md">
-      <div class="type-label-cat color-dim uppercase mb-xs">project</div>
-      <div class="type-body-md color-secondary">{{ take.project_id if take.project_id else 'unresolved' }}</div>
+  <div class="drawer-section">
+    <div class="drawer-label">Metadata</div>
+    <div class="prov-row">
+      <span>ID</span>
+      <span>{{ take.id }}</span>
     </div>
-
-    <div class="mb-md">
-      <div class="type-label-cat color-dim uppercase mb-xs">formatted</div>
-      <div class="formatted-block type-body-md color-primary">
-        {{ take.formatted_text }}
-      </div>
+    <div class="prov-row">
+      <span>Project</span>
+      <span>{{ take.project_id if take.project_id else 'unresolved' }}</span>
     </div>
-
-    <div class="mb-md">
-      <div class="type-label-cat color-dim uppercase mb-xs">raw capture</div>
-      <div class="raw-capture-block type-body-md color-secondary {% if take.raw_asr %}italic{% endif %}">
-        {% if take.raw_asr %}
-          {{ take.raw_asr }}
-        {% else %}
-          <span class="color-dim" style="font-style: normal;">Raw content has been removed.</span>
-        {% endif %}
-      </div>
+    <div class="prov-row">
+      <span>Captured</span>
+      <span>{{ take.event_ts }}</span>
     </div>
+    <div class="prov-row">
+      <span>Status</span>
+      <span class="{% if take.is_deleted %}warning{% else %}green{% endif %}">
+        {% if take.is_deleted %}deleted{% else %}active{% endif %}
+      </span>
+    </div>
+  </div>
 
-    <div class="flex justify-between items-center border-top border-divider pt-sm mt-md">
-      <div class="flex-col">
-        <div class="type-body-sm color-secondary">source: {{ take.source_application }}</div>
-        <div class="type-code-ts color-dim">captured: {{ take.event_ts }}</div>
-        <div class="type-body-sm bold mt-xs {% if take.is_deleted %}color-rose{% else %}color-accent{% endif %}">
-          status: {% if take.is_deleted %}deleted{% else %}active{% endif %}
-        </div>
-      </div>
+  <div class="drawer-section">
+    <div class="drawer-label">Formatted</div>
+    <div class="claim">
+      {{ take.formatted_text }}
+    </div>
+  </div>
+
+  <div class="drawer-section">
+    <div class="drawer-label">Raw Capture</div>
+    <div class="claim">
+      {% if take.raw_asr %}
+        <em>{{ take.raw_asr }}</em>
+      {% else %}
+        <span class="faded">Raw content has been removed.</span>
+      {% endif %}
     </div>
   </div>
 </aside>

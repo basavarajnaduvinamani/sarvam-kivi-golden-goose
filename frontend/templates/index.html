@@ -7,29 +7,28 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="type-headline-md mb-lg">Hey Kivi</h1>
-
-<div id="chat-history" class="chat-container">
-  <div class="chat-bubble bot">
-    <div class="type-body-lg color-primary">Hello. I'm Kivi. Ask me anything about your projects.</div>
-  </div>
+<div class="intro">
+  <h1>Hey Kivi</h1>
+  <p>Hello. I'm Kivi. Ask me anything about your projects.</p>
 </div>
 
-<form class="input-area" hx-post="/htmx/ask" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#ask-loading" hx-on::after-request="if(event.detail.successful) this.elements.question.value=''">
-  <div class="form-row flex items-center gap-md">
-    <label for="project_id" class="type-label-cat color-muted">project</label>
-    <select id="project_id" name="project_id">
-      <option value="">— no specific project —</option>
-      {% for proj in projects %}
-      <option value="{{ proj.id }}">{{ proj.name }}</option>
-      {% endfor %}
-    </select>
+<div id="chat-history" class="conversation">
+</div>
+
+<form class="composer" hx-post="/htmx/ask" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#ask-loading" hx-on::after-request="if(event.detail.successful) this.elements.question.value=''">
+  <input type="text" name="question" required placeholder="ask hey kivi...">
+  <div class="composer-foot">
+    <span>Scoped to
+      <select id="project_id" name="project_id">
+        <option value="">— no specific project —</option>
+        {% for proj in projects %}
+        <option value="{{ proj.id }}">{{ proj.name }}</option>
+        {% endfor %}
+      </select>
+    </span>
+    <button type="submit" class="primary" hx-disabled-elt="this">ask</button>
   </div>
-  <div class="form-row flex items-center gap-md mt-sm">
-    <input type="text" name="question" required class="flex-grow w-full" placeholder="ask hey kivi...">
-    <button type="submit" class="btn-primary" hx-disabled-elt="this">ask</button>
-  </div>
-  <div id="ask-loading" class="htmx-indicator mt-sm type-body-sm color-muted pulse" aria-live="polite">
+  <div id="ask-loading" class="htmx-indicator warning" aria-live="polite">
     retrieving evidence...
   </div>
 </form>
