@@ -77,7 +77,14 @@
     </div>
     <div class="flex gap-md">
       {% if response.input_tokens != None and response.output_tokens != None %}
-        <span>{{ response.input_tokens }} in / {{ response.output_tokens }} out</span>
+        <span>tokens: {{ response.input_tokens }} in / {{ response.output_tokens }} out</span>
+      {% elif response.input_tokens != None %}
+        <span>tokens in: {{ response.input_tokens }}</span>
+      {% elif response.output_tokens != None %}
+        <span>tokens out: {{ response.output_tokens }}</span>
+      {% endif %}
+      {% if response.estimated_cost_usd != None %}
+        <span>cost: ${{ "%.4f"|format(response.estimated_cost_usd) }}</span>
       {% endif %}
     </div>
   </div>

@@ -19,17 +19,19 @@
       </div>
     </div>
     <nav class="app-nav">
-      <a href="/" class="nav-link type-label-nav {% if request.url.path == '/' %}active{% endif %}">ask kivi</a>
+      <a href="/" class="nav-link type-label-nav {% if request.url.path == '/' %}active{% endif %}">hey kivi</a>
       <a href="/briefing" class="nav-link type-label-nav {% if request.url.path == '/briefing' %}active{% endif %}">briefing</a>
-      <a href="/inbox" class="nav-link type-label-nav {% if request.url.path == '/inbox' %}active{% endif %}">inbox</a>
       <a href="/timeline" class="nav-link type-label-nav {% if request.url.path == '/timeline' %}active{% endif %}">timeline</a>
+      <a href="/inbox" class="nav-link type-label-nav {% if request.url.path == '/inbox' %}active{% endif %}">inbox</a>
       <a href="/import-eval" class="nav-link type-label-nav {% if request.url.path == '/import-eval' %}active{% endif %}">import and eval</a>
     </nav>
   </header>
   <main class="app-main">
+    {% block sidebar_wrapper %}
     <aside class="contextual-sidebar">
       {% block sidebar %}{% endblock %}
     </aside>
+    {% endblock %}
     {% block content_wrapper %}
     <div class="content-stage reading">
       {% block content %}{% endblock %}

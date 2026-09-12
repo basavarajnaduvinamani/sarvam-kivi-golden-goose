@@ -33,7 +33,17 @@
     <div><div class="type-label-cat color-dim">end-to-end p50 / p95</div><div class="type-body-md color-primary">{{ m.end_to_end_latency_p50_ms }} / {{ m.end_to_end_latency_p95_ms }} ms</div></div>
 
     <div><div class="type-label-cat color-dim">database growth</div><div class="type-body-md color-primary">{{ m.database_growth_bytes }} B</div></div>
-    <div><div class="type-label-cat color-dim">tokens used (in / out)</div><div class="type-body-md color-primary">{{ m.input_tokens }} / {{ m.output_tokens }}</div></div>
+    <div><div class="type-label-cat color-dim">tokens used (in / out)</div><div class="type-body-md color-primary">
+      {% if m.input_tokens != None and m.output_tokens != None %}
+        {{ m.input_tokens }} / {{ m.output_tokens }}
+      {% elif m.input_tokens != None %}
+        {{ m.input_tokens }} in
+      {% elif m.output_tokens != None %}
+        {{ m.output_tokens }} out
+      {% else %}
+        —
+      {% endif %}
+    </div></div>
     {% if m.estimated_cost_usd != None %}
     <div><div class="type-label-cat color-dim">estimated cost</div><div class="type-body-md color-primary">${{ "%.4f"|format(m.estimated_cost_usd) }}</div></div>
     {% endif %}
@@ -54,7 +64,7 @@
       {% if m.fabricated_answer_count > 0 %}<div class="flex justify-between"><span class="type-body-sm color-secondary">fabricated answers</span><span class="type-body-md color-rose">{{ m.fabricated_answer_count }}</span></div>{% endif %}
     </div>
   {% else %}
-    <div class="type-body-sm color-accent mb-md">No integrity violations detected.</div>
+    <div class="type-body-sm color-accent mb-md">No integrity violations detected in this run.</div>
   {% endif %}
 
   <div class="divider"></div>
