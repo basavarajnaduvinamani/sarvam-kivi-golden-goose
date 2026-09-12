@@ -158,9 +158,14 @@ def inspect_database(project_id: str | None = None) -> dict[str, Any]:
 def main() -> None:
     args = build_parser().parse_args()
     if args.command == "serve":
-        import uvicorn
+        repo_root = str(Path(__file__).resolve().parents[2])
+        if repo_root not in sys.path:
+            sys.path.insert(0, repo_root)
 
-        uvicorn.run("kivi.main:app", host=args.host, port=args.port)
+        import uvicorn
+        from .main import app
+
+        uvicorn.run(app, host=args.host, port=args.port)
     elif args.command == "db":
         if args.db_command == "migrate":
             migrate_database()
