@@ -5,7 +5,7 @@
 **Status:** Approved for implementation
 **Document owner:** Basavaraj A. Naduvinamani
 **Implementation targets:** `frontend/templates/` and `frontend/static/styles.css`
-**Source contracts:** `PART_TWO_SPEC.md` §13 and `coordination/INTEGRATION_CONTRACT.md` v1.2
+**Source contracts:** `PART_TWO_SPEC.md` §13 and `docs/API_CONTRACT.md` v1.2
 
 ---
 
@@ -15,7 +15,7 @@ This document is the single canonical design specification for the Kivi local we
 
 ### 1.1 Source hierarchy (descending authority)
 
-1. `coordination/INTEGRATION_CONTRACT.md` v1.2 — schema, routes, typed statuses, field names
+1. `docs/API_CONTRACT.md` v1.2 — schema, routes, typed statuses, field names
 2. `backend/kivi/schemas.py` and `backend/kivi/enums.py` — exact Pydantic models and StrEnum values
 3. `backend/kivi/app.py` — implemented FastAPI routes
 4. `frontend/router.py` — implemented HTMX routes

@@ -1,16 +1,27 @@
 # Kivi Semantic Memory System
 
-Kivi is a voice-first semantic memory system designed for multilingual knowledge workers who dictate decisions across desktop applications. The product turns intentional speech into a traceable, project-scoped record of what was decided, revised, rejected, or left open.
+**For multilingual knowledge workers who dictate decisions across desktop applications, Kivi is a voice-first, project-scoped memory that turns intentional speech into a traceable record of what was decided, revised, rejected, or left open.**
 
 Where ordinary dictation ends at formatted text inside an active application window, Kivi establishes durable semantic memory to power **Hey Kivi**—allowing users to recall project state, retrieve exact citations across applications, apply temporal corrections, and safely purge sensitive evidence.
 
-- **Product Positioning**: [docs/positioning_statement.md](docs/positioning_statement.md)
-- **Product Vision**: [docs/vision_document.md](docs/vision_document.md)
-- **Architecture Blueprint**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- **System Limitations**: [docs/LIMITATIONS.md](docs/LIMITATIONS.md)
-- **Reviewer Guide & Runbook**: [RUN.md](RUN.md)
+## Reviewer map
+
+| Concept & Product | Technical Specifications | Evidence & Proof |
+|---|---|---|
+| [Product Positioning](docs/positioning_statement.md) | [Architecture Blueprint](docs/ARCHITECTURE.md) | [Reviewer Runbook](RUN.md) |
+| [Product Vision](docs/vision_document.md) | [Design System](DESIGN_SYSTEM.md) | [Browser Evidence Gallery](evidence/browser/GALLERY.md) |
+| [System Limitations](docs/LIMITATIONS.md) | [API Integration Contract](docs/API_CONTRACT.md) | [Research & Audit Index](research/README.md) |
+| [Documentation Map](docs/README.md) | | [Latest Evaluation Results](results/latest.md) |
+
+## Why this repository is evidence-led
+
+This submission relies on observable behavior and reproducible data rather than theoretical capability:
+- **Reproducible Evaluation**: A [500-record JSONL corpus](corpus/kivi_500.jsonl) drives a [132-case deterministic evaluation suite](evaluation/cases.jsonl) proving zero leakage, zero resurrection, and zero citation failures.
+- **Empirical Grounding**: The product vision and architectural constraints respond directly to [46 live audit cases](research/empirical_audit/KIVI_WINDOWS_AUDIT_REPORT.md) performed on the Kivi Windows alpha application.
+- **Visual Verification**: The [browser gallery](evidence/browser/GALLERY.md) captures real local flows demonstrating strict lifecycle and provenance guarantees.
 
 ---
+
 
 ## Concrete Use Cases
 
