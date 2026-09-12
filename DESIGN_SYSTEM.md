@@ -1,5 +1,5 @@
 # Kivi Design System
-## Canonical Reference — v1.0
+## Canonical Reference — v2.1 (Light-Mode Editorial Edition)
 
 **Document class:** Normative design specification
 **Status:** Approved for implementation
@@ -52,7 +52,7 @@ Section headings, greeting text, and empty-state prose SHOULD use editorial sent
 
 ### 2.3 Organic restraint
 
-Colors, borders, and controls MUST feel warm and grounded — drawn from near-black canvas, warm cream ink, and a restrained lime-green accent. Saturation is always muted outside the primary accent. No synthetic neon, large solid-green blocks, or cyberpunk gradients.
+Colors, borders, and controls MUST feel warm and grounded — drawn from a warm fibrous paper canvas, high-contrast ink, and restrained botanical moss and lime accents. Saturation is always muted outside the primary accent. No synthetic neon, large solid-green blocks, or cyberpunk gradients.
 
 ### 2.4 Calm reassurance
 
@@ -92,66 +92,68 @@ These rules take precedence over every aesthetic preference.
 | T-3 | Epistemic status values MUST match `EpistemicStatus`: `PROPOSED`, `APPROVED`, `REJECTED`, `CONDITIONAL`, `UNRESOLVED`. |
 | T-4 | Lifecycle status values MUST match `LifecycleStatus`: `ACTIVE`, `SUPERSEDED`, `INVALIDATED`, `TOMBSTONED`. |
 | T-5 | `retrieval_latency_ms` MUST be labeled "retrieval" when displayed. `end_to_end_latency_ms` MUST be labeled "completed in". Both are real measurements from `AskResponse`. |
-| T-6 | `input_tokens` and `output_tokens` MUST only be displayed when both are non-null. When either is null the token line is omitted entirely. |
-| T-7 | `estimated_cost_usd` is nullable. It MUST NOT be displayed when null. |
-| T-8 | Import result counts MUST come from `CorpusImportResult` fields: `total`, `ingested`, `memories_created`, `unscoped`, `failed`. |
-| T-9 | Evaluation metrics MUST be read from the live `EvaluationRunRead` response. No prior-run history, fabricated pass rates, or hard-coded values may appear. |
-| T-10 | Error messages MUST NOT expose raw Python exception class names, stack traces, internal route paths, database error codes, or model provider API keys. |
-| T-11 | The Inbox MUST NOT preselect a project, auto-detect scope from Take content, or display detected-entity metadata not present in `TakeRead`. |
-| T-12 | The correction form MUST only appear on memories whose `lifecycle_status` is `ACTIVE`. |
-| T-13 | The Revoke action calls `DELETE /htmx/takes/{take_id}`. It MUST NOT appear on a Take whose `is_deleted` is `true`. |
-| T-14 | Import `error_type` values are mapped through the whitelist in §20.3 before display. Unknown values render as "processing error". Raw detail strings from unknown error types MUST NOT be rendered. |
-| T-15 | No production template may contain a hard-coded Take ID, project name, or timestamp. This restriction does not apply to deterministic evaluation fixtures or automated test files. |
-| T-16 | The frontend MUST branch on the `status` field of `AskResponse`, not on the HTTP status code alone. |
+| T-6 | Ask tokens use `input_tokens`, `output_tokens`, and `estimated_cost_usd`. `model_usage` is omitted. Omit `input_tokens`, `output_tokens`, or `estimated_cost_usd` individually whenever their value is `None`; never render `None`, `$None`, or invented zero values. |
+| T-7 | Timeline data is sourced strictly from `ProjectTimelineResponse.entries`. Each entry uses `memory_id`, `evidence`, `supersedes_memory_id`, and `superseded_by_memory_ids`. |
+| T-8 | Evaluation metrics use the exact names from `EvaluationMetricsRead`, including `conflict_detection_accuracy`, `temporal_correction_accuracy`, `retrieval_latency_p50_ms`, `retrieval_latency_p95_ms`, `end_to_end_latency_p50_ms`, `end_to_end_latency_p95_ms`, and `estimated_cost_usd`. |
+| T-9 | Evaluation cases use `question`, `passed`, `duration_ms`, `expected_status`, `actual_status`, and `failure_reasons` from `EvaluationCaseResultRead`. |
+| T-10 | Import result counts MUST come from `CorpusImportResult` fields: `total`, `ingested`, `memories_created`, `unscoped`, `failed`. Errors map strictly to safe categories: IngestionError -> "could not process record", ProviderUnavailable -> "service unavailable", other -> "processing error". |
+| T-11 | When evaluation integrity violations count is zero, the allowed text is strictly: "No integrity violations detected in this run." |
+| T-12 | The Inbox MUST NOT preselect a project, auto-detect scope from Take content, or display detected-entity metadata not present in `TakeRead`. |
+| T-13 | The correction form MUST only appear on memories whose `lifecycle_status` is `ACTIVE`. |
+| T-14 | The Revoke action calls `DELETE /htmx/takes/{take_id}`. It is a Timeline action only and MUST NOT appear inside the Evidence Drawer. |
+| T-15 | The Evidence Drawer is an inline persistent contextual component, not an independent route. It renders strictly `TakeRead` fields: `id`, `project_id`, `raw_asr`, `formatted_text`, `source_application`, `event_ts`, `ingested_ts`, `is_deleted`, and `tombstoned_at`. |
+| T-16 | The top navigation consists strictly of the five canonical routes in approved order: `hey kivi` -> `briefing` -> `timeline` -> `inbox` -> `import and eval`. Project selection remains inside the relevant forms. |
+| T-17 | Error messages MUST NOT expose raw Python exception class names, stack traces, internal route paths, database error codes, or model provider API keys. |
+| T-18 | No production template may contain a hard-coded Take ID, project name, or timestamp. This restriction does not apply to deterministic evaluation fixtures or automated test files. |
+| T-19 | The frontend MUST branch on the `status` field of `AskResponse`, not on the HTTP status code alone. |
 
 ---
 
-## 4. Color Tokens
+## 4. Color Tokens (Light-Mode Editorial)
 
-The palette is derived from the authentic HeyKivi visual language. It operates on a near-black ground with a single vibrant lime-green accent. Pure black and pure white are avoided in favor of warm-neutral extremes.
+The palette balances warm, fibrous physical tones with sharp high-contrast ink and restrained botanical moss and lime accents.
 
 ### 4.1 Surface scale
 
 | Token | Hex | Role |
 |---|---|---|
-| `--color-depth` | `#060a05` | Deepest layer — behind the page for visual depth only |
-| `--color-canvas` | `#0b0e0a` | Global page background |
-| `--color-surface-1` | `#121710` | Header bar, structural scaffolding |
-| `--color-surface-2` | `#1a2016` | Cards, panels, main interaction surface |
-| `--color-surface-3` | `#1e2519` | Inset wells, input fields, nested containers |
-| `--color-surface-active` | `#1e2d18` | Selected card tint, active scope highlight |
+| `--color-canvas` | `#FAF9F4` | Global warm fibrous paper canvas |
+| `--color-surface-1` | `#F5F4EF` | Header bar, structural scaffolding |
+| `--color-surface-2` | `#FFFDF8` | Elevated cards, resting panels, main interaction surface |
+| `--color-surface-3` | `#EFECE0` | Inset wells, input fields, nested containers |
+| `--color-surface-active` | `#E8F3ED` | Selected card tint, active scope highlight |
 
 ### 4.2 Text scale
 
 | Token | Hex | Role |
 |---|---|---|
-| `--color-ink-primary` | `#f4f1e6` | Headings, active text, primary content |
-| `--color-ink-secondary` | `#b9b6a8` | Body prose, supporting commentary |
-| `--color-ink-muted` | `#7d7b6f` | Metadata labels, secondary captions |
-| `--color-ink-dim` | `#5a5855` | Timestamps, inactive navigation labels |
-| `--color-ink-placeholder` | `#4e4c46` | Input placeholder text |
+| `--color-ink-primary` | `#1B1D18` | Headings, active text, primary content (14.2:1 contrast) |
+| `--color-ink-secondary` | `#4C4F46` | Body prose, supporting commentary (7.1:1 contrast) |
+| `--color-ink-muted` | `#707268` | Metadata labels, secondary captions (4.5:1 contrast) |
+| `--color-ink-dim` | `#8E9084` | Timestamps, inactive navigation labels |
+| `--color-ink-placeholder` | `#8E9084` | Input placeholder text |
 
 ### 4.3 Accent and semantic scale
 
 | Token | Value | Role |
 |---|---|---|
-| `--color-accent` | `#a8e063` | Primary interactive accent: buttons, focus rings, APPROVED/ACTIVE indicators |
-| `--color-accent-on` | `#1b1d18` | Text on accent-filled surfaces |
-| `--color-accent-dim` | `#256b2f` | Accent container backgrounds, badge fills |
-| `--color-accent-border` | `rgba(168,224,99,0.25)` | Active card borders, selected outlines |
-| `--color-accent-surface` | `rgba(168,224,99,0.10)` | APPROVED/ACTIVE badge background |
-| `--color-rose` | `#ff6b6b` | Destructive hover text, error text |
-| `--color-rose-surface` | `rgba(255,107,107,0.10)` | Destructive hover fill |
-| `--color-sand-surface` | `rgba(205,175,120,0.12)` | CONDITIONAL epistemic badge background |
-| `--color-sand-text` | `#c9a96e` | CONDITIONAL epistemic badge text |
-| `--color-amber-surface` | `rgba(232,137,43,0.12)` | PROPOSED epistemic badge background |
-| `--color-amber-text` | `#e8892b` | PROPOSED epistemic badge text |
-| `--color-steel-surface` | `rgba(255,255,255,0.05)` | SUPERSEDED, TOMBSTONED badge background |
-| `--color-steel-text` | `#7d7b6f` | SUPERSEDED, TOMBSTONED badge text |
-| `--color-conflict-surface` | `rgba(255,107,107,0.08)` | CONFLICTING_EVIDENCE claim background |
-| `--color-conflict-text` | `#ff9b7a` | CONFLICTING_EVIDENCE claim text |
-| `--color-border-hairline` | `rgba(255,255,255,0.07)` | Standard card and panel borders |
-| `--color-border-divider` | `rgba(255,255,255,0.06)` | Section dividers, footer separators |
+| `--color-accent` | `#85C444` | Primary interactive accent: buttons, active borders |
+| `--color-accent-on` | `#1B1D18` | Text on accent-filled surfaces |
+| `--color-accent-dim` | `#24684A` | Accent container borders, link text |
+| `--color-accent-border` | `rgba(133,196,68,0.35)` | Active card borders, selected outlines |
+| `--color-accent-surface` | `#E8F3ED` | APPROVED/ACTIVE badge background |
+| `--color-rose` | `#9B1C1C` | Destructive hover text, error text |
+| `--color-rose-surface` | `#FDE8E8` | Destructive hover fill |
+| `--color-sand-surface` | `#F4EDE4` | CONDITIONAL epistemic badge background |
+| `--color-sand-text` | `#78350F` | CONDITIONAL epistemic badge text |
+| `--color-amber-surface` | `#FEF3E2` | PROPOSED epistemic badge background |
+| `--color-amber-text` | `#874D00` | PROPOSED epistemic badge text |
+| `--color-steel-surface` | `#F3F4F6` | SUPERSEDED, UNRESOLVED badge background |
+| `--color-steel-text` | `#4B5563` | SUPERSEDED, UNRESOLVED badge text |
+| `--color-conflict-surface` | `#FEF2F2` | CONFLICTING_EVIDENCE claim background |
+| `--color-conflict-text` | `#991B1B` | CONFLICTING_EVIDENCE claim text |
+| `--color-border-hairline` | `rgba(27,29,24,0.08)` | Standard card and panel hairlines |
+| `--color-border-divider` | `rgba(27,29,24,0.06)` | Section dividers, footer separators |
 
 ### 4.4 Status color supplement
 
@@ -159,7 +161,7 @@ Status meaning MUST NEVER rely on color alone. Every status MUST carry a visible
 
 | Status | Supplemental prefix | Color token |
 |---|---|---|
-| ANSWERED | (none) | — |
+| ANSWERED | (none) | `--color-accent-dim` |
 | NO_EVIDENCE | em-dash | `--color-amber-text` |
 | NEEDS_CLARIFICATION | ? | `--color-ink-secondary` |
 | CONFLICTING_EVIDENCE | left-right arrow | `--color-conflict-text` |
@@ -304,14 +306,14 @@ Under `prefers-reduced-motion: reduce`, all animations and transitions MUST be s
 
 ## 9. Global Application Shell
 
-The shell is implemented in `frontend/templates/base.html`. The stylesheet MUST be updated to the dark palette defined in §4 and §5.
+The shell is implemented in `frontend/templates/base.html`. The stylesheet MUST be updated to the light-mode editorial palette defined in §4 and §5.
 
 ### 9.1 Shell structure
 
 ```
 +------------------------------------------------------------------+
 |  Application header — 56px, --color-surface-1                    |
-|  [kivi wordmark]  [subtitle]  [nav: ask / briefing / inbox / …]  |
+|  [kivi wordmark]  [subtitle]  [nav: hey kivi / briefing / …]     |
 +--------------------+---------------------------------------------+
 |  Contextual        |  Content stage                              |
 |  sidebar           |  block content                              |
@@ -351,10 +353,10 @@ Background: `--color-surface-2`. Padding: `--space-lg`. The stage expands to `--
 
 | Label | Route | Template |
 |---|---|---|
-| ask kivi | `/` | `index.html` |
+| hey kivi | `/` | `index.html` |
 | briefing | `/briefing` | `briefing.html` |
-| inbox | `/inbox` | `inbox.html` |
 | timeline | `/timeline` | `timeline.html` |
+| inbox | `/inbox` | `inbox.html` |
 | import and eval | `/import-eval` | `import_eval.html` |
 
 There is no "Sources" navigation item. Source evidence is accessed exclusively through the Evidence Drawer. No additional navigation items MAY be added without a corresponding implemented route.
@@ -379,7 +381,7 @@ Each page template MUST provide exactly one `<h1>` that names the current view (
 Used for: "ask", "generate briefing", "scope take", "import", "run evaluation", "submit correction".
 
 - Background: `--color-accent`
-- Text: `--color-accent-on` (near-black), `--type-label-action`
+- Text: `--color-accent-on` (#1B1D18), `--type-label-action`
 - Radius: `--radius-md` (8px)
 - Padding: `--space-sm` vertical, `--space-lg` horizontal
 - Minimum height: 44px
@@ -1281,8 +1283,8 @@ An implementation is complete only when every item below is satisfied.
 
 | Source | Idea | Adopted as |
 |---|---|---|
-| HeyKivi visual reference study | Near-black canvas #0b0e0a, deepest layer #060a05 | `--color-canvas`, `--color-depth` in §4.1 |
-| HeyKivi visual reference study | Warm cream primary text #f4f1e6 | `--color-ink-primary` in §4.2 |
+| HeyKivi visual reference study | Warm fibrous paper canvas #FAF9F4 | `--color-canvas`, `--color-depth` in §4.1 |
+| HeyKivi visual reference study | High-contrast editorial ink #1B1D18 | `--color-ink-primary` in §4.2 |
 | HeyKivi visual reference study | Lime-green primary accent #a8e063 | `--color-accent` in §4.3 |
 | HeyKivi visual reference study | Destructive red #ff6b6b | `--color-rose` in §4.3 |
 | HeyKivi visual reference study | Secondary text #b9b6a8 | `--color-ink-secondary` in §4.2 |

@@ -1,49 +1,51 @@
 {% extends "base.html" %}
 
-{% block sidebar %}{% endblock %}
+{% block sidebar_wrapper %}{% endblock %}
 
 {% block content_wrapper %}
-<div class="content-stage wide">
-  <!-- Import Panel -->
-  <section class="panel-section">
-    <h2 class="type-headline-sm color-primary mb-lg">import corpus</h2>
-    <form hx-post="/htmx/import" hx-target="#import-result" hx-encoding="multipart/form-data" class="flex-col gap-md">
-      <div>
-        <label class="type-body-md color-secondary block mb-sm">select a <code>.jsonl</code> corpus file</label>
-        <input type="file" name="corpus_file" accept=".json,.jsonl" required class="w-full">
-      </div>
-      <div>
-        <button type="submit" class="btn-primary" hx-indicator="#import-indicator" hx-disabled-elt="this">import</button>
-      </div>
-      <div id="import-indicator" class="htmx-indicator type-body-sm color-muted pulse" aria-live="polite">uploading...</div>
-    </form>
-    <div id="import-result" class="mt-lg"></div>
-  </section>
-
-  <!-- Evaluation Panel -->
-  <section class="panel-section">
-    <h2 class="type-headline-sm color-primary mb-lg">evaluation</h2>
-    <div class="flex items-center gap-md mb-lg">
-      <button class="btn-secondary" hx-get="/htmx/evaluate/latest" hx-target="#eval-result" hx-indicator="#eval-indicator" hx-disabled-elt="this">fetch latest</button>
-      <form hx-post="/htmx/evaluate/run" hx-target="#eval-result" style="margin:0;">
-        <input type="hidden" name="mode" value="deterministic">
-        <button type="submit" class="btn-primary" hx-indicator="#eval-indicator" hx-disabled-elt="this">run evaluation</button>
+<div class="flex-col w-full" style="max-width: var(--layout-content-wide);">
+  <div class="content-stage wide">
+    <!-- Import Panel -->
+    <section class="panel-section">
+      <h2 class="type-headline-sm color-primary mb-lg">import corpus</h2>
+      <form hx-post="/htmx/import" hx-target="#import-result" hx-encoding="multipart/form-data" class="flex-col gap-md">
+        <div>
+          <label class="type-body-md color-secondary block mb-sm">select a <code>.jsonl</code> corpus file</label>
+          <input type="file" name="corpus_file" accept=".json,.jsonl" required class="w-full">
+        </div>
+        <div>
+          <button type="submit" class="btn-primary" hx-indicator="#import-indicator" hx-disabled-elt="this">import</button>
+        </div>
+        <div id="import-indicator" class="htmx-indicator type-body-sm color-muted pulse" aria-live="polite">uploading...</div>
       </form>
-      <div id="eval-indicator" class="htmx-indicator type-body-sm color-muted pulse" aria-live="polite">running...</div>
-    </div>
-    <div id="eval-result">
-      <div class="type-body-md color-dim">
-        No evaluation runs found. Run an evaluation to see results here.
-      </div>
-    </div>
-  </section>
-</div>
+      <div id="import-result" class="mt-lg"></div>
+    </section>
 
-<!-- Drawer for Case/Take Inspection placed below the 2 columns -->
-<div class="mt-xl w-full">
-  <div id="eval-case-container"></div>
-  <div id="evidence-drawer-container" class="mt-lg">
-    {% include "components/evidence_drawer.html" %}
+    <!-- Evaluation Panel -->
+    <section class="panel-section">
+      <h2 class="type-headline-sm color-primary mb-lg">evaluation</h2>
+      <div class="flex items-center gap-md mb-lg">
+        <button class="btn-secondary" hx-get="/htmx/evaluate/latest" hx-target="#eval-result" hx-indicator="#eval-indicator" hx-disabled-elt="this">fetch latest</button>
+        <form hx-post="/htmx/evaluate/run" hx-target="#eval-result" style="margin:0;">
+          <input type="hidden" name="mode" value="deterministic">
+          <button type="submit" class="btn-primary" hx-indicator="#eval-indicator" hx-disabled-elt="this">run evaluation</button>
+        </form>
+        <div id="eval-indicator" class="htmx-indicator type-body-sm color-muted pulse" aria-live="polite">running...</div>
+      </div>
+      <div id="eval-result">
+        <div class="type-body-md color-dim">
+          No evaluation runs found. Run an evaluation to see results here.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Drawer for Case/Take Inspection placed below the 2 columns -->
+  <div class="mt-xl w-full">
+    <div id="eval-case-container"></div>
+    <div id="evidence-drawer-container" class="mt-lg">
+      {% include "components/evidence_drawer.html" %}
+    </div>
   </div>
 </div>
 {% endblock %}

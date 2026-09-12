@@ -83,8 +83,18 @@ def test_get_index(mock_session):
     client = TestClient(test_app)
     response = client.get("/")
     assert response.status_code == 200
-    assert "Kivi" in response.text
+    assert "Hey Kivi" in response.text
     assert "Test Project" in response.text # Project selector populated
+    assert 'id="evidence-drawer"' in response.text
+
+def test_get_briefing_contains_evidence_drawer(mock_session):
+    test_app = create_test_app()
+    test_app.dependency_overrides[get_session] = override_get_session(mock_session)
+    client = TestClient(test_app)
+    response = client.get("/briefing")
+    assert response.status_code == 200
+    assert "briefing" in response.text
+    assert 'id="evidence-drawer"' in response.text
 
 @patch('frontend.router.ask')
 def test_ask_answered(mock_ask, mock_session):

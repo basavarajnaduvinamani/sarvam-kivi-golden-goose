@@ -13,7 +13,7 @@
   <div class="type-body-md color-primary mb-md">{{ case.question }}</div>
 
   <div class="type-body-sm color-muted mb-md">
-    Project ID: {{ case.project_id }} | Duration: {{ case.duration_ms }} ms | Input Tokens: {{ case.input_tokens }} | Output Tokens: {{ case.output_tokens }} | Cost: ${{ case.estimated_cost_usd }}
+    Project ID: {{ case.project_id }} | Duration: {{ case.duration_ms }} ms{% if case.input_tokens != None %} | Input Tokens: {{ case.input_tokens }}{% endif %}{% if case.output_tokens != None %} | Output Tokens: {{ case.output_tokens }}{% endif %}{% if case.estimated_cost_usd != None %} | Cost: ${{ case.estimated_cost_usd }}{% endif %}
   </div>
 
   {% if case.expected %}
