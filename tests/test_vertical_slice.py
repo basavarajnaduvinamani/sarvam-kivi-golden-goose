@@ -241,6 +241,41 @@ def test_unresolved_approved_values_return_conflict(client):
     assert len(answer["claims"]) == 2
 
 
+def test_active_approved_memories_with_different_person_names_produce_conflict(client):
+    from kivi.services.retrieval import _semantically_equivalent_values
+
+    assert not _semantically_equivalent_values(["Maya Rao", "Priya Sharma"])
+    assert not _semantically_equivalent_values(["wait for Maya Rao approval", "wait for Priya Sharma approval"])
+
+    client.post(
+        "/projects",
+        json={"id": "project-harbor", "name": "Project Harbor", "aliases": ["Harbor"]},
+    )
+    for take_id, person_name in (("take_maya", "Maya Rao"), ("take_priya", "Priya Sharma")):
+        text = f"Project Harbor's release lead is {person_name}."
+        response = client.post(
+            "/takes",
+            json={
+                "take_id": take_id,
+                "project_id": "project-harbor",
+                "raw_asr": text.lower(),
+                "formatted_text": text,
+                "source_application": "Notepad",
+                "event_ts": datetime.now(timezone.utc).isoformat(),
+                "metadata": {"object_value": person_name},
+            },
+        )
+        assert response.status_code == 201
+
+    answer = client.post(
+        "/ask",
+        json={"project_id": "project-harbor", "question": "When is the Harbor release?"},
+    ).json()
+    assert answer["status"] == "CONFLICTING_EVIDENCE"
+    assert set(answer["supporting_take_ids"]) == {"take_maya", "take_priya"}
+    assert len(answer["claims"]) == 2
+
+
 def test_bulk_import_reports_scoped_unscoped_and_failed_records(client):
     client.post(
         "/projects",
