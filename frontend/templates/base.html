@@ -1,41 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kivi - Semantic Memory</title>
-    <!-- Vendored HTMX -->
-    <script src="/static/vendor/htmx.min.js"></script>
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-    <!-- Local CSS -->
-    <link rel="stylesheet" href="/static/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kivi</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/vendor/htmx.min.js"></script>
+  {% block head %}{% endblock %}
 </head>
 <body>
-    <header>
-        <div class="logo-container">
-            <div class="logo-icon">K</div>
-            <h1 class="logo-text">Kivi</h1>
-        </div>
-        <div class="header-subtitle">Project-Scoped Memory</div>
-        <nav class="header-nav" style="margin-left: auto; display: flex; gap: 1rem;">
-            <a href="/">Ask</a>
-            <a href="/briefing">Briefing</a>
-            <a href="/inbox">Inbox</a>
-            <a href="/timeline">Timeline</a>
-            <a href="/import-eval">Import & Eval</a>
-        </nav>
-    </header>
-
-    <main>
-        <!-- Sidebar / Project Timeline -->
-        <aside class="sidebar">
-            {% block sidebar %}{% endblock %}
-        </aside>
-
-        <!-- Main Interaction Area -->
-        <section class="main-interaction">
-            {% block content %}{% endblock %}
-        </section>
-    </main>
+  <header class="app-header">
+    <div class="wordmark-container">
+      <div class="wordmark-icon">K</div>
+      <div>
+        <div class="wordmark-text type-headline-sm">Kivi</div>
+        <div class="wordmark-sub type-body-sm">project-scoped memory</div>
+      </div>
+    </div>
+    <nav class="app-nav">
+      <a href="/" class="nav-link type-label-nav {% if request.url.path == '/' %}active{% endif %}">ask kivi</a>
+      <a href="/briefing" class="nav-link type-label-nav {% if request.url.path == '/briefing' %}active{% endif %}">briefing</a>
+      <a href="/inbox" class="nav-link type-label-nav {% if request.url.path == '/inbox' %}active{% endif %}">inbox</a>
+      <a href="/timeline" class="nav-link type-label-nav {% if request.url.path == '/timeline' %}active{% endif %}">timeline</a>
+      <a href="/import-eval" class="nav-link type-label-nav {% if request.url.path == '/import-eval' %}active{% endif %}">import and eval</a>
+    </nav>
+  </header>
+  <main class="app-main">
+    <aside class="contextual-sidebar">
+      {% block sidebar %}{% endblock %}
+    </aside>
+    {% block content_wrapper %}
+    <div class="content-stage reading">
+      {% block content %}{% endblock %}
+    </div>
+    {% endblock %}
+  </main>
 </body>
 </html>

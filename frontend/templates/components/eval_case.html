@@ -1,60 +1,48 @@
 {% if error %}
-<div class="error-box" style="color: red;">
-    Error: {{ error }}
-</div>
+<div class="type-body-md color-rose">{{ error }}</div>
 {% elif case %}
-<div style="border: 1px solid #ccc; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-    <h3>Case: {{ case.case_id }} ({{ case.category }})</h3>
-    <span style="color: {{ 'green' if case.passed else 'red' }}; font-weight: bold; font-size: 1.2em;">
-        {{ "PASS" if case.passed else "FAIL" }}
-    </span>
-
-    <p><strong>Project ID:</strong> {{ case.project_id or "None" }}</p>
-    <p><strong>Question:</strong> {{ case.question }}</p>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-        <div>
-            <h4>Expected</h4>
-            <pre style="background: #f0f0f0; padding: 0.5rem; border-radius: 4px; overflow-x: auto;">
-Status: {{ case.expected_status }}
-{% if case.expected.contains %}Contains: {{ case.expected.contains | join(', ') }}{% endif %}
-{% if case.expected.excludes %}Excludes: {{ case.expected.excludes | join(', ') }}{% endif %}
-{% if case.expected.supporting_take_ids %}Takes: {{ case.expected.supporting_take_ids | join(', ') }}{% endif %}
-            </pre>
-        </div>
-        <div>
-            <h4>Actual</h4>
-            <pre style="background: #f0f0f0; padding: 0.5rem; border-radius: 4px; overflow-x: auto;">
-Status: {{ case.actual_status }}
-{% if case.actual.answer %}Answer: {{ case.actual.answer }}{% endif %}
-            </pre>
-        </div>
-    </div>
-
-    {% if not case.passed %}
-    <div style="margin-top: 1rem; border-top: 1px solid #ccc; padding-top: 1rem; color: red;">
-        <h4>Failures:</h4>
-        <ul>
-            {% for reason in case.failure_reasons %}
-                <li>{{ reason }}</li>
-            {% endfor %}
-        </ul>
-    </div>
+<div class="card border-accent-border mb-lg">
+  <div class="flex justify-between items-center mb-md">
+    <div class="type-code-id color-primary">{{ case.case_id }}</div>
+    {% if case.passed %}
+      <span class="color-accent bold">pass</span>
+    {% else %}
+      <span class="color-rose bold">fail</span>
     {% endif %}
+  </div>
+  <div class="type-body-md color-primary mb-md">{{ case.question }}</div>
 
-    <div style="margin-top: 1rem; border-top: 1px solid #ccc; padding-top: 1rem;">
-        <h4>Retrieved Context</h4>
-        <ul style="font-size: 0.9em; color: #555;">
-            <li>Supporting Takes: {{ case.supporting_take_ids | join(', ') }}</li>
-            <li>Relevant Memories: {{ case.relevant_memory_ids | join(', ') }}</li>
-        </ul>
-        <h4>Performance & Cost</h4>
-        <ul style="font-size: 0.9em; color: #555;">
-            <li>Duration: {{ case.duration_ms }} ms</li>
-            <li>Input Tokens: {{ case.input_tokens }}</li>
-            <li>Output Tokens: {{ case.output_tokens }}</li>
-            <li>Cost: ${{ case.estimated_cost_usd }}</li>
-        </ul>
-    </div>
+  <div class="type-body-sm color-muted mb-md">
+    Project ID: {{ case.project_id }} | Duration: {{ case.duration_ms }} ms | Input Tokens: {{ case.input_tokens }} | Output Tokens: {{ case.output_tokens }} | Cost: ${{ case.estimated_cost_usd }}
+  </div>
+
+  {% if case.expected %}
+  <div class="type-label-cat color-dim uppercase mt-sm mb-xs">expected</div>
+  <ul class="type-body-sm color-dim" style="margin-top:0; padding-left:1rem;">
+    {% if case.expected.contains %}<li>Contains: {{ case.expected.contains|join(', ') }}</li>{% endif %}
+    {% if case.expected.excludes %}<li>Excludes: {{ case.expected.excludes|join(', ') }}</li>{% endif %}
+    {% if case.expected.supporting_take_ids %}<li>Takes: {{ case.expected.supporting_take_ids|join(', ') }}</li>{% endif %}
+  </ul>
+  {% endif %}
+
+  {% if case.actual.answer %}
+  <div class="type-label-cat color-dim uppercase mb-xs">answer</div>
+  <div class="bg-surface-3 p-sm radius-sm type-body-md color-secondary mb-md">
+    {{ case.actual.answer }}
+  </div>
+  {% endif %}
+
+  {% if not case.passed and case.failure_reasons %}
+  <div class="type-label-cat color-rose uppercase mb-xs">failures</div>
+  <ul class="type-body-sm color-rose" style="margin-top:0; padding-left:1rem;">
+    {% for r in case.failure_reasons %}
+    <li>{{ r }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if case.relevant_memory_ids %}
+  <div class="type-body-sm color-dim mt-sm">Relevant Memories: {{ case.relevant_memory_ids|join(', ') }}</div>
+  {% endif %}
 </div>
 {% endif %}

@@ -1,50 +1,58 @@
-{% if take %}
-<div style="display: flex; flex-direction: column; gap: 1rem;">
-    <div>
-        <h3 style="font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between; margin: 0;">
-            Take Details
-            <span style="padding: 0.25rem 0.5rem; background: var(--gray-bg); border-radius: 0.25rem; font-size: 0.75rem;">{{ take.id }}</span>
-        </h3>
-    </div>
-
-    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <div style="background: var(--gray-bg); padding: 0.75rem; border-radius: 0.25rem; border: 1px solid var(--gray-border);">
-            <span style="font-size: 0.75rem; font-weight: 500; text-transform: uppercase;">Project Scope</span>
-            <p style="font-size: 0.875rem; font-weight: 500; margin: 0.25rem 0 0 0;">{{ take.project_id or "Unresolved" }}</p>
-        </div>
-
-        <div style="background: var(--blue-bg); padding: 0.75rem; border-radius: 0.25rem; border: 1px solid var(--blue-border);">
-            <span style="font-size: 0.75rem; font-weight: 500; text-transform: uppercase; color: var(--blue);">Formatted Output</span>
-            <p style="font-size: 0.875rem; margin: 0.25rem 0 0 0; color: #1e3a8a;">{{ take.formatted_text }}</p>
-        </div>
-
-        <div style="background: var(--gray-bg); padding: 0.75rem; border-radius: 0.25rem; border: 1px solid var(--gray-border);">
-            <span style="font-size: 0.75rem; font-weight: 500; text-transform: uppercase;">Raw ASR</span>
-            <p style="font-size: 0.875rem; font-style: italic; margin: 0.25rem 0 0 0;">"{{ take.raw_asr }}"</p>
-        </div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem; background: var(--gray-bg); padding: 0.75rem; border-radius: 0.25rem; border: 1px solid var(--gray-border);">
-        <div>
-            <span style="display: block; font-weight: 500;">Source</span>
-            <span>{{ take.source_application }}</span>
-        </div>
-        <div>
-            <span style="display: block; font-weight: 500;">Time</span>
-            <span>{{ take.event_ts.strftime('%Y-%m-%d %H:%M') if take.event_ts else 'N/A' }}</span>
-        </div>
-        <div style="grid-column: span 2;">
-            <span style="display: block; font-weight: 500;">Status</span>
-            {% if take.is_deleted %}
-            <span style="color: var(--red); font-weight: 600;">TOMBSTONED</span>
-            {% else %}
-            <span style="color: var(--primary); font-weight: 600;">ACTIVE</span>
-            {% endif %}
-        </div>
-    </div>
-</div>
+{% if missing %}
+<aside class="evidence-drawer-inner" aria-label="Evidence inspector">
+  <div class="type-label-cat color-dim mb-xs uppercase">evidence</div>
+  <div class="card p-md type-body-sm color-rose text-center">
+    This source could not be found.
+  </div>
+</aside>
+{% elif not take %}
+<aside class="evidence-drawer-inner" aria-label="Evidence inspector">
+  <div class="type-label-cat color-dim mb-xs uppercase">evidence</div>
+  <div class="card p-md type-body-sm color-dim text-center">
+    Click a source citation to inspect the evidence here.
+  </div>
+</aside>
 {% else %}
-<div style="font-size: 0.875rem; color: var(--red);">
-    Evidence not found.
-</div>
+<aside class="evidence-drawer-inner" aria-label="Evidence inspector">
+  <div class="type-label-cat color-dim mb-xs uppercase">evidence</div>
+  <div class="card p-md">
+    <div class="flex justify-between items-center mb-md">
+      <div class="type-label-action color-secondary">take details</div>
+      <div class="type-code-id bg-surface-3 color-dim border-hairline radius-sm px-xs py-2">{{ take.id }}</div>
+    </div>
+
+    <div class="mb-md">
+      <div class="type-label-cat color-dim uppercase mb-xs">project</div>
+      <div class="type-body-md color-secondary">{{ take.project_id if take.project_id else 'unresolved' }}</div>
+    </div>
+
+    <div class="mb-md">
+      <div class="type-label-cat color-dim uppercase mb-xs">formatted</div>
+      <div class="formatted-block type-body-md color-primary">
+        {{ take.formatted_text }}
+      </div>
+    </div>
+
+    <div class="mb-md">
+      <div class="type-label-cat color-dim uppercase mb-xs">raw capture</div>
+      <div class="raw-capture-block type-body-md color-secondary {% if take.raw_asr %}italic{% endif %}">
+        {% if take.raw_asr %}
+          {{ take.raw_asr }}
+        {% else %}
+          <span class="color-dim" style="font-style: normal;">Raw content has been removed.</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center border-top border-divider pt-sm mt-md">
+      <div class="flex-col">
+        <div class="type-body-sm color-secondary">source: {{ take.source_application }}</div>
+        <div class="type-code-ts color-dim">captured: {{ take.event_ts }}</div>
+        <div class="type-body-sm bold mt-xs {% if take.is_deleted %}color-rose{% else %}color-accent{% endif %}">
+          status: {% if take.is_deleted %}deleted{% else %}active{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
 {% endif %}

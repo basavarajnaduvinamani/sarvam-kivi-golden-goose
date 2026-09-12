@@ -42,7 +42,7 @@ def htmx_ask(
 @router.get('/htmx/takes/{take_id}')
 def htmx_get_take(take_id: str, request: Request, session: Session = Depends(get_session)):
     take = session.get(Take, take_id)
-    return templates.TemplateResponse(request=request, name='components/evidence_drawer.html', context={'take': take})
+    return templates.TemplateResponse(request=request, name='components/evidence_drawer.html', context={'take': take, 'missing': take is None})
 
 @router.get('/timeline')
 def timeline_index(request: Request, session: Session = Depends(get_session)):
@@ -163,7 +163,7 @@ def htmx_assign_scope(take_id: str, request: Request, project_id: str = Form(...
         return templates.TemplateResponse(request=request, name='components/scope_result.html', context={'error': 'Invalid or conflicting user action.'})
     except ProviderUnavailable:
         logging.exception('Provider unavailable assigning scope')
-        return templates.TemplateResponse(request=request, name='components/scope_result.html', context={'error': 'Provider is unavailable.'})
+        return templates.TemplateResponse(request=request, name='components/scope_result.html', context={'error': 'service unavailable'})
     except Exception:
         logging.exception('Error assigning scope')
         return templates.TemplateResponse(request=request, name='components/scope_result.html', context={'error': 'An internal error occurred.'})
@@ -187,7 +187,7 @@ def htmx_correct_memory(memory_id: str, request: Request, project_id: str = Form
         return templates.TemplateResponse(request=request, name='components/correction_error.html', context={'error': 'Invalid or conflicting user action.', 'project_id': project_id})
     except ProviderUnavailable:
         logging.exception('Provider unavailable correcting memory')
-        return templates.TemplateResponse(request=request, name='components/correction_error.html', context={'error': 'Provider is unavailable.', 'project_id': project_id})
+        return templates.TemplateResponse(request=request, name='components/correction_error.html', context={'error': 'service unavailable', 'project_id': project_id})
     except Exception:
         logging.exception('Error correcting memory')
         return templates.TemplateResponse(request=request, name='components/correction_error.html', context={'error': 'An internal error occurred.', 'project_id': project_id})
@@ -224,7 +224,7 @@ def htmx_briefing(
         return templates.TemplateResponse(request=request, name='components/ask_result.html', context={'error': 'Invalid or conflicting user action.', 'question': focus or ''})
     except ProviderUnavailable:
         logging.exception('Provider unavailable briefing')
-        return templates.TemplateResponse(request=request, name='components/ask_result.html', context={'error': 'Provider is unavailable.', 'question': focus or ''})
+        return templates.TemplateResponse(request=request, name='components/ask_result.html', context={'error': 'service unavailable', 'question': focus or ''})
     except Exception:
         logging.exception('Error during /htmx/briefing')
         return templates.TemplateResponse(request=request, name='components/ask_result.html', context={'error': 'An internal service error occurred.', 'question': focus or ''})
