@@ -21,3 +21,5 @@ This directory documents the independent research, empirical observation, and pr
 ## Audit screenshots
 
 Browser-captured evidence of the working Kivi demonstration is maintained in [`../evidence/browser/`](../evidence/browser/). See the [visual gallery](../evidence/browser/GALLERY.md) for representative screenshots of each interface surface.
+
+Empirical evidence from testing the Windows alpha application is retained in [`empirical_audit/screenshots/`](empirical_audit/screenshots/).
