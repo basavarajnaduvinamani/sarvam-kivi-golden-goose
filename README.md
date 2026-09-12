@@ -1,10 +1,15 @@
 # Kivi Semantic Memory System
 
 [![Cross-Platform CI](https://github.com/basavarajnaduvinamani/sarvam-kivi-golden-goose/actions/workflows/cross-platform.yml/badge.svg)](https://github.com/basavarajnaduvinamani/sarvam-kivi-golden-goose/actions/workflows/cross-platform.yml)
+![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571.svg)
+![SQLite + FTS5](https://img.shields.io/badge/SQLite-FTS5-blue.svg)
 
 **For multilingual knowledge workers who dictate decisions across desktop applications, Kivi is a voice-first, project-scoped memory that turns intentional speech into a traceable record of what was decided, revised, rejected, or left open.**
 
 Where ordinary dictation ends at formatted text inside an active application window, Kivi establishes durable semantic memory to power **Hey Kivi**—allowing users to recall project state, retrieve exact citations across applications, apply temporal corrections, and safely purge sensitive evidence.
+
+> Reviewer start here: Follow [RUN.md](RUN.md) for the reproducible local path, then inspect the [browser gallery](evidence/browser/GALLERY.md) and [132-case deterministic results](results/latest.md).
 
 ## Reviewer map
 
@@ -15,7 +20,7 @@ Where ordinary dictation ends at formatted text inside an active application win
 | [System Limitations](docs/LIMITATIONS.md) | [API Integration Contract](docs/API_CONTRACT.md) | [Research & Audit Index](research/README.md) |
 | [Documentation Map](docs/README.md) | | [Latest Evaluation Results](results/latest.md) |
 
-## Why this repository is evidence-led
+## What Kivi demonstrates
 
 This submission relies on observable behavior and reproducible data rather than theoretical capability:
 - **Reproducible Evaluation**: A [500-record JSONL corpus](corpus/kivi_500.jsonl) drives a [132-case deterministic evaluation suite](evaluation/cases.jsonl) proving zero leakage, zero resurrection, and zero citation failures.
