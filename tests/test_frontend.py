@@ -220,8 +220,10 @@ def test_evidence_drawer_missing_take(mock_session):
     assert response.status_code == 200
     assert "This source could not be found." in response.text
 
-def test_index_form_behavior():
-    client = TestClient(app)
+def test_index_form_behavior(mock_session):
+    test_app = create_test_app()
+    test_app.dependency_overrides[get_session] = override_get_session(mock_session)
+    client = TestClient(test_app)
     response = client.get("/")
     assert response.status_code == 200
     html = response.text
@@ -232,22 +234,28 @@ def test_index_form_behavior():
     assert "event.detail.successful" in html
     assert "this.elements.question.value" in html
 
-def test_favicon_route_and_reference():
+def test_favicon_route_and_reference(mock_session):
+    app.dependency_overrides[get_session] = override_get_session(mock_session)
     client = TestClient(app)
 
-    # Base template references the local favicon
-    response = client.get("/")
-    assert response.status_code == 200
-    assert 'href="/static/favicon.svg"' in response.text
+    try:
+        # Base template references the local favicon
+        response = client.get("/")
+        assert response.status_code == 200
+        assert 'href="/static/favicon.svg"' in response.text
 
-    # The local favicon route returns 200
-    favicon_response = client.get("/static/favicon.svg")
-    assert favicon_response.status_code == 200
-    assert "svg" in favicon_response.headers.get("content-type", "")
+        # The local favicon route returns 200
+        favicon_response = client.get("/static/favicon.svg")
+        assert favicon_response.status_code == 200
+        assert "svg" in favicon_response.headers.get("content-type", "")
+    finally:
+        app.dependency_overrides.clear()
 
 
-def test_timeline_page_loads():
-    client = TestClient(app)
+def test_timeline_page_loads(mock_session):
+    test_app = create_test_app()
+    test_app.dependency_overrides[get_session] = override_get_session(mock_session)
+    client = TestClient(test_app)
     response = client.get("/timeline")
     assert response.status_code == 200
     assert "project timeline" in response.text
@@ -298,7 +306,8 @@ def test_htmx_timeline_success(mock_get_timeline, mock_session):
     assert "Revoke" in response.text
 
 def test_import_eval_page_loads():
-    client = TestClient(app)
+    test_app = create_test_app()
+    client = TestClient(test_app)
     response = client.get("/import-eval")
     assert response.status_code == 200
     assert "import corpus" in response.text
@@ -451,8 +460,10 @@ def test_eval_case_renders_fields():
         assert "50" in html
         assert "$0.05" in html
 
-def test_timeline_selector_no_invalid_hxget():
-    client = TestClient(app)
+def test_timeline_selector_no_invalid_hxget(mock_session):
+    test_app = create_test_app()
+    test_app.dependency_overrides[get_session] = override_get_session(mock_session)
+    client = TestClient(test_app)
     response = client.get("/timeline")
     assert response.status_code == 200
     html = response.text
@@ -461,7 +472,8 @@ def test_timeline_selector_no_invalid_hxget():
     assert "document.getElementById('project_id').addEventListener('change'" in html
 
 def test_unexpected_exceptions_are_masked():
-    client = TestClient(app)
+    test_app = create_test_app()
+    client = TestClient(test_app)
     with patch('backend.kivi.evaluation.get_latest_run', side_effect=Exception("SUPER SECRET EXCEPTION")):
         response = client.get("/htmx/evaluate/latest")
         assert response.status_code == 200
