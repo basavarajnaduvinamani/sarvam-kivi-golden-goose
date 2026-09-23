@@ -1,46 +1,53 @@
 {% extends "base.html" %}
 
+{% block top_title %}Inbox{% endblock %}
+
 {% block sidebar_wrapper %}{% endblock %}
 
 {% block content %}
-<h1 class="type-headline-md">unscoped inbox</h1>
+<div class="intro">
+  <h1 class="page-title" style="text-transform: capitalize;">unscoped inbox</h1>
+  {% if takes %}
+  <p class="subtitle">{{ takes|length }} take{% if takes|length != 1 %}s{% endif %} awaiting a project</p>
+  {% else %}
+  <p class="subtitle">Review and assign captured takes to project scopes.</p>
+  {% endif %}
+</div>
 
 {% if takes %}
-<div class="type-body-md color-muted mb-lg mt-sm">{{ takes|length }} take{% if takes|length != 1 %}s{% endif %} awaiting a project</div>
-
 <div class="flex-col gap-md">
   {% for take in takes %}
   <div class="card unscoped" id="take-{{ take.id }}">
     <div class="card-header">
       <div>
-        <span class="type-code-id color-dim">{{ take.id }}</span>
+        <span class="type-code-id">{{ take.id }}</span>
       </div>
-      <div class="text-right">
-        <div class="type-body-sm color-secondary">{{ take.source_application }}</div>
-        <div class="type-code-ts color-dim">{{ take.event_ts }}</div>
+      <div class="text-right flex items-center gap-sm">
+        <span class="tag">{{ take.source_application }}</span>
+        <span class="type-code-ts">{{ take.event_ts }}</span>
       </div>
     </div>
 
-    <div class="formatted-block type-body-md color-primary mb-md">
+    <div class="preview type-body-md color-primary mb-md" style="line-height: 22px; font-style: normal;">
       {{ take.formatted_text }}
     </div>
 
-    <form hx-post="/htmx/takes/{{ take.id }}/scope" hx-target="#take-{{ take.id }}" hx-swap="outerHTML" class="flex items-center gap-md">
-      <label class="type-label-cat color-muted">assign to project</label>
-      <select name="project_id" required>
+    <form hx-post="/htmx/takes/{{ take.id }}/scope" hx-target="#take-{{ take.id }}" hx-swap="outerHTML" class="assign-row" style="border-top: 1px solid #EBE9E1; padding-top: 14px; margin-top: 14px; display: flex; align-items: center; gap: 12px;">
+      <label class="type-label-cat color-muted">ASSIGN TO PROJECT</label>
+      <select name="project_id" required style="font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 6px 10px; border: 1px solid #C8C5B8; border-radius: 6px; background: #fff;">
         <option value="" disabled selected>— choose project —</option>
         {% for p in projects %}
         <option value="{{ p.id }}">{{ p.name }}</option>
         {% endfor %}
       </select>
-      <button type="submit" class="btn-primary" hx-disabled-elt="this">scope take</button>
+      <button type="submit" class="primary" style="margin-left: auto; padding: 6px 16px; font-size: 12px;" hx-disabled-elt="this">Scope Take</button>
     </form>
   </div>
   {% endfor %}
 </div>
 
 {% else %}
-<div class="mt-lg type-body-md color-dim text-center">
+<div class="card" style="text-align: center; padding: 48px 24px; color: #8A8D80;">
   No unscoped takes at the moment.
 </div>
 {% endif %}

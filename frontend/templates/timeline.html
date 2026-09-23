@@ -1,12 +1,18 @@
 {% extends "base.html" %}
 
+{% block top_title %}Timeline{% endblock %}
+
 {% block sidebar_wrapper %}{% endblock %}
 
 {% block content %}
-<h1 class="type-headline-md mb-lg">project timeline</h1>
+<div class="intro">
+  <h1 class="page-title" style="text-transform: capitalize;">project timeline</h1>
+  <p class="subtitle">Chronological record of approved project memories, transitions, and evidence.</p>
+</div>
 
-<div class="mb-lg">
-  <select id="project_id" class="w-full" style="max-width:300px;">
+<div class="scope-wrap" style="margin-bottom: 24px;">
+  <label for="project_id" class="type-label-cat color-muted" style="display: block; margin-bottom: 6px;">SELECT PROJECT</label>
+  <select id="project_id" class="scope-btn" style="min-width: 280px; outline: none; cursor: pointer; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: #fff; border: 1px solid #C8C5B8; border-radius: 8px;">
     <option value="" disabled selected>— choose a project —</option>
     {% for proj in projects %}
     <option value="{{ proj.id }}">{{ proj.name }}</option>
@@ -15,7 +21,7 @@
 </div>
 
 <div id="timeline-results">
-  <div class="type-body-md color-dim text-center mt-lg">
+  <div class="type-body-md color-dim text-center" style="padding: 48px 0;">
     Select a project to view its memory timeline.
   </div>
 </div>

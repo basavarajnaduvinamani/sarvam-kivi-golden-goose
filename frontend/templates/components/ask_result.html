@@ -1,4 +1,9 @@
 {% if error %}
+{% if question %}
+<div class="user-msg">
+  {{ question }}
+</div>
+{% endif %}
 <div class="kivi-card abstain">
   <div class="eyebrow">SERVICE_ERROR — service unavailable</div>
   <p class="warning">Kivi is currently unable to reach its reasoning service. Check your configuration and try again.</p>
@@ -11,8 +16,8 @@
 </div>
 
 <div class="kivi-card {% if response.status in ['NO_EVIDENCE', 'NEEDS_CLARIFICATION', 'CONFLICTING_EVIDENCE'] %}abstain{% endif %}">
-  <div class="avatar-k">K</div>
-  <div class="answer-head">Kivi</div>
+  <span class="avatar-k">K</span>
+  <h2 class="answer-head">Answer</h2>
 
   {% if response.status == 'ANSWERED' %}
     <p>{{ response.answer }}</p>
@@ -21,7 +26,7 @@
         <div class="source-line">
           <small>{{ claim.claim_text }}</small>
           {% for tid in claim.supporting_take_ids %}
-            <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }}</button>
+            <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }} &#x2197;</button>
           {% endfor %}
         </div>
       {% endfor %}
@@ -40,7 +45,7 @@
         <div class="source-line">
           <small>{{ claim.claim_text }}</small>
           {% for tid in claim.supporting_take_ids %}
-            <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }}</button>
+            <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }} &#x2197;</button>
           {% endfor %}
         </div>
       {% endfor %}
@@ -49,17 +54,19 @@
 
   <!-- Response Footer -->
   <div class="meta">
-    {% if response.retrieval_latency_ms != None %}retrieval: {{ response.retrieval_latency_ms }} ms | {% endif %}
-    {% if response.end_to_end_latency_ms != None %}completed in: {{ response.end_to_end_latency_ms }} ms | {% endif %}
+    {% if response.supporting_take_ids %}{{ response.supporting_take_ids|length }} source{% if response.supporting_take_ids|length != 1 %}s{% endif %} consulted{% else %}0 sources consulted{% endif %}
+    {% if response.project_id %} · {{ response.project_id }}{% endif %}
+    {% if response.retrieval_latency_ms != None %} · retrieval: {{ response.retrieval_latency_ms }} ms{% endif %}
+    {% if response.end_to_end_latency_ms != None %} · completed in: {{ response.end_to_end_latency_ms }} ms{% endif %}
     {% if response.input_tokens != None and response.output_tokens != None %}
-      tokens: {{ response.input_tokens }} in / {{ response.output_tokens }} out |
+      · tokens: {{ response.input_tokens }} in / {{ response.output_tokens }} out
     {% elif response.input_tokens != None %}
-      tokens in: {{ response.input_tokens }} |
+      · tokens in: {{ response.input_tokens }}
     {% elif response.output_tokens != None %}
-      tokens out: {{ response.output_tokens }} |
+      · tokens out: {{ response.output_tokens }}
     {% endif %}
     {% if response.estimated_cost_usd != None %}
-      cost: ${{ "%.4f"|format(response.estimated_cost_usd) }}
+      · cost: ${{ "%.4f"|format(response.estimated_cost_usd) }}
     {% endif %}
   </div>
 </div>

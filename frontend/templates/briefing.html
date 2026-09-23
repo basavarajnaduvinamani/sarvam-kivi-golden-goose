@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block top_title %}Briefing{% endblock %}
+
 {% block sidebar %}
 <div id="evidence-drawer">
   {% include "components/evidence_drawer.html" %}
@@ -8,15 +10,15 @@
 
 {% block content %}
 <div class="intro">
-  <h1>Project Briefing</h1>
-  <p>Request a grounded briefing for a project.</p>
+  <h1>Project Briefing.</h1>
+  <p>Request a grounded briefing for a project. Kivi will synthesize evidence across project records.</p>
 </div>
 
 <div id="chat-history" class="conversation">
 </div>
 
 <form class="composer" hx-post="/htmx/briefing" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#briefing-loading" hx-on::after-request="if(event.detail.successful) this.elements.focus.value=''">
-  <input type="text" name="focus" placeholder="e.g., provide the current project state and unresolved items.">
+  <input type="text" name="focus" placeholder="e.g. Provide the current project state and unresolved items..." required>
   <div class="composer-foot">
     <span>Scoped to
       <select id="project_id" name="project_id" required>
@@ -26,7 +28,7 @@
         {% endfor %}
       </select>
     </span>
-    <button type="submit" class="primary" hx-disabled-elt="this">generate briefing</button>
+    <button type="submit" class="primary" hx-disabled-elt="this">Generate Briefing</button>
   </div>
   <div id="briefing-loading" class="htmx-indicator warning" aria-live="polite">
     retrieving evidence...
