@@ -956,6 +956,10 @@ button { cursor: pointer; }
   transition: background 0.15s ease;
 }
 .btn-secondary:hover { background: #F5F3EC; }
+.btn-secondary:focus-visible {
+  outline: 2px solid #85C444;
+  outline-offset: 2px;
+}
 
 .btn-destructive {
   background: transparent;
@@ -1017,7 +1021,22 @@ button { cursor: pointer; }
   max-width: 960px;
 }
 .briefing-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
   margin-bottom: 24px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 .briefing-card-title {
   font: 600 20px 'Playfair Display', Georgia, serif;

@@ -6,16 +6,24 @@
   <button class="primary" style="margin-top: 12px;" onclick="const f = document.querySelector('input[name=focus]') || document.querySelector('input[name=question]'); if (f) { f.focus(); f.select(); }">Retry</button>
 </div>
 {% elif response.status in ['NO_EVIDENCE', 'NEEDS_CLARIFICATION', 'CONFLICTING_EVIDENCE'] %}
-<div class="briefing-dashboard" style="margin-top: 28px;">
+<div class="briefing-dashboard" style="margin-top: 28px;" data-project-name="{{ project.name if project else 'Project' }}">
   <div class="briefing-head mb-lg">
-    <h2 class="page-title">{{ project.name if project else 'Project' }} Briefing</h2>
-    <div class="subtitle">{{ project.name if project else 'Project' }} &middot; Generated just now</div>
+    <div>
+      <h2 class="page-title">{{ project.name if project else 'Project' }} Briefing</h2>
+      <div class="subtitle">{{ project.name if project else 'Project' }} &middot; Generated just now</div>
+    </div>
+    <div>
+      <button type="button" class="btn-secondary" id="btn-copy-markdown" onclick="copyBriefingMarkdown(this)" aria-label="Copy briefing as Markdown">
+        <span class="copy-label">Copy as Markdown</span>
+      </button>
+      <span id="copy-markdown-live" class="sr-only" aria-live="polite"></span>
+    </div>
   </div>
 
   <div class="card scope-card mb-lg" style="border-left: 3px solid #C8C5B8;">
     <div class="eyebrow">SCOPE</div>
     <h3 class="briefing-card-title">{{ project.name if project else 'Project' }} Scope</h3>
-    <p class="type-body-md color-secondary mt-sm mb-md">
+    <p class="type-body-md color-secondary mt-sm mb-md scope-overview-text">
       {% if response.decision_reason %}
         {{ response.decision_reason }}
       {% else %}
@@ -41,10 +49,10 @@
       {% if commitments %}
       <div class="entity-list mt-md">
         {% for c in commitments %}
-        <div class="entity-row">
+        <div class="entity-row" data-statement="{{ c.statement }}" data-status="{{ c.status|upper }}" data-takes="{{ c.take_ids|join(', ') }}">
           <div style="flex-grow: 1; padding-right: 12px;">
             <div class="entity-name">{{ c.statement }}</div>
-            <div class="type-body-sm color-dim" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">{{ c.status }}</div>
+            <div class="type-body-sm color-dim" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">{{ c.status|upper }}</div>
           </div>
           <div class="entity-role-wrap">
             {% for tid in c.take_ids %}
@@ -55,7 +63,7 @@
         {% endfor %}
       </div>
       {% else %}
-      <div class="type-body-sm color-dim mt-md" style="padding: 16px 0;">No active commitments recorded for this project.</div>
+      <div class="type-body-sm color-dim mt-md empty-commitments-text" style="padding: 16px 0;">No active commitments recorded for this project.</div>
       {% endif %}
     </div>
 
@@ -66,7 +74,7 @@
       {% if open_questions %}
       <div class="unresolved-list mt-md">
         {% for q in open_questions %}
-        <div class="unresolved-item">
+        <div class="unresolved-item" data-text="{{ q.text }}" data-takes="{{ q.take_ids|join(', ') }}">
           <span class="dot-amber"></span>
           <div class="unresolved-content">
             <span class="unresolved-text">{{ q.text }}</span>
@@ -78,17 +86,25 @@
         {% endfor %}
       </div>
       {% else %}
-      <div class="type-body-sm color-dim mt-md" style="padding: 16px 0;">No open questions recorded for this project.</div>
+      <div class="type-body-sm color-dim mt-md empty-questions-text" style="padding: 16px 0;">No open questions recorded for this project.</div>
       {% endif %}
     </div>
   </div>
 </div>
 {% else %}
 <!-- Full Grounded Project Briefing Dashboard -->
-<div class="briefing-dashboard" style="margin-top: 28px;">
+<div class="briefing-dashboard" style="margin-top: 28px;" data-project-name="{{ project.name if project else 'Project' }}">
   <div class="briefing-head mb-lg">
-    <h2 class="page-title">{{ project.name if project else 'Project' }} Briefing</h2>
-    <div class="subtitle">{{ project.name if project else 'Project' }} &middot; Generated just now</div>
+    <div>
+      <h2 class="page-title">{{ project.name if project else 'Project' }} Briefing</h2>
+      <div class="subtitle">{{ project.name if project else 'Project' }} &middot; Generated just now</div>
+    </div>
+    <div>
+      <button type="button" class="btn-secondary" id="btn-copy-markdown" onclick="copyBriefingMarkdown(this)" aria-label="Copy briefing as Markdown">
+        <span class="copy-label">Copy as Markdown</span>
+      </button>
+      <span id="copy-markdown-live" class="sr-only" aria-live="polite"></span>
+    </div>
   </div>
 
   <!-- Primary Scope Card -->
@@ -96,7 +112,7 @@
     <div class="eyebrow">SCOPE</div>
     <h3 class="briefing-card-title">{{ project.name if project else 'Project' }} Scope</h3>
     <div class="briefing-overview mt-sm mb-md">
-      <p class="type-body-md color-primary" style="line-height: 24px;">{{ response.answer }}</p>
+      <p class="type-body-md color-primary scope-overview-text" style="line-height: 24px;">{{ response.answer }}</p>
       {% if response.claims %}
         <div class="briefing-claims mt-sm">
           {% for claim in response.claims %}
@@ -138,10 +154,10 @@
       {% if commitments %}
       <div class="entity-list mt-md">
         {% for c in commitments %}
-        <div class="entity-row">
+        <div class="entity-row" data-statement="{{ c.statement }}" data-status="{{ c.status|upper }}" data-takes="{{ c.take_ids|join(', ') }}">
           <div style="flex-grow: 1; padding-right: 12px;">
             <div class="entity-name">{{ c.statement }}</div>
-            <div class="type-body-sm color-dim" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">{{ c.status }}</div>
+            <div class="type-body-sm color-dim" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">{{ c.status|upper }}</div>
           </div>
           <div class="entity-role-wrap">
             {% for tid in c.take_ids %}
@@ -152,7 +168,7 @@
         {% endfor %}
       </div>
       {% else %}
-      <div class="type-body-sm color-dim mt-md" style="padding: 16px 0;">No active commitments recorded for this project.</div>
+      <div class="type-body-sm color-dim mt-md empty-commitments-text" style="padding: 16px 0;">No active commitments recorded for this project.</div>
       {% endif %}
     </div>
 
@@ -163,7 +179,7 @@
       {% if open_questions %}
       <div class="unresolved-list mt-md">
         {% for q in open_questions %}
-        <div class="unresolved-item">
+        <div class="unresolved-item" data-text="{{ q.text }}" data-takes="{{ q.take_ids|join(', ') }}">
           <span class="dot-amber"></span>
           <div class="unresolved-content">
             <span class="unresolved-text">{{ q.text }}</span>
@@ -175,7 +191,7 @@
         {% endfor %}
       </div>
       {% else %}
-      <div class="type-body-sm color-dim mt-md" style="padding: 16px 0;">No open questions recorded for this project.</div>
+      <div class="type-body-sm color-dim mt-md empty-questions-text" style="padding: 16px 0;">No open questions recorded for this project.</div>
       {% endif %}
     </div>
   </div>
