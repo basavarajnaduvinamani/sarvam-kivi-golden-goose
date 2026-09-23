@@ -1,11 +1,11 @@
 import pytest
-from backend.kivi.models import Take, Project, Memory, MemoryEvidence
-from backend.kivi.enums import LifecycleStatus, EpistemicStatus, MemoryType
+from kivi.models import Take, Project, Memory, MemoryEvidence
+from kivi.enums import LifecycleStatus, EpistemicStatus, MemoryType
 from datetime import datetime, timezone
 from frontend.router import router as frontend_router
-from backend.kivi.db import get_session
-from backend.kivi.providers import ProviderUnavailable
-from backend.kivi.schemas import CorpusImportResult, CorpusImportError
+from kivi.db import get_session
+from kivi.providers import ProviderUnavailable
+from kivi.schemas import CorpusImportResult, CorpusImportError
 from sqlalchemy import select
 from unittest.mock import patch
 
@@ -107,8 +107,8 @@ def test_briefing_success_renders_answered(client, session_factory, monkeypatch)
         session.add(p)
         session.commit()
 
-    from backend.kivi.schemas import AskResponse
-    from backend.kivi.enums import QueryStatus
+    from kivi.schemas import AskResponse
+    from kivi.enums import QueryStatus
 
     def mock_ask(*args, **kwargs):
         return AskResponse(
@@ -189,8 +189,8 @@ def test_ask_answered_renders_citation(client, session_factory):
         session.add(p)
         session.commit()
 
-    from backend.kivi.schemas import AskResponse
-    from backend.kivi.enums import QueryStatus
+    from kivi.schemas import AskResponse
+    from kivi.enums import QueryStatus
 
     with patch('frontend.router.ask') as mock_ask:
         mock_ask.return_value = AskResponse(

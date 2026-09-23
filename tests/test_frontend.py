@@ -1,13 +1,13 @@
 import pytest
 from fastapi.testclient import TestClient
-from backend.kivi.main import app
-from backend.kivi.app import ProviderBundle, create_app
-from backend.kivi.schemas import AskResponse, TakeRead
-from backend.kivi.providers import MemoryExtractor, Embedder, GroundedAnswerer, EmbeddingResult, ProviderUsage
-from backend.kivi.db import get_session
+from kivi.main import app
+from kivi.app import ProviderBundle, create_app
+from kivi.schemas import AskResponse, TakeRead
+from kivi.providers import MemoryExtractor, Embedder, GroundedAnswerer, EmbeddingResult, ProviderUsage
+from kivi.db import get_session
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
-from backend.kivi.models import Base, Take, Project
+from kivi.models import Base, Take, Project
 from datetime import datetime, timezone
 
 class MockExtractor(MemoryExtractor):
@@ -262,7 +262,7 @@ def test_timeline_page_loads(mock_session):
 
 @patch('frontend.router.get_project_timeline')
 def test_htmx_timeline_success(mock_get_timeline, mock_session):
-    from backend.kivi.schemas import ProjectTimelineResponse, ProjectRead, TimelineEntryRead, TimelineEvidenceRead
+    from kivi.schemas import ProjectTimelineResponse, ProjectRead, TimelineEntryRead, TimelineEvidenceRead
     from datetime import datetime, timezone
     mock_get_timeline.return_value = ProjectTimelineResponse(
         project=ProjectRead(id="test-project", name="Test Project", aliases=[], created_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc)),
@@ -315,7 +315,7 @@ def test_import_eval_page_loads():
 
 @patch('frontend.router.import_takes')
 def test_htmx_import_success(mock_import_takes, mock_session):
-    from backend.kivi.schemas import CorpusImportResult
+    from kivi.schemas import CorpusImportResult
     mock_import_takes.return_value = CorpusImportResult(
         total=1, ingested=1, memories_created=1, unscoped=0, failed=0, errors=[]
     )
@@ -330,10 +330,10 @@ def test_htmx_import_success(mock_import_takes, mock_session):
     assert "Successfully ingested: 1" in response.text
     assert "Memories created: 1" in response.text
 
-@patch('backend.kivi.evaluation.get_latest_run')
+@patch('kivi.evaluation.get_latest_run')
 def test_htmx_evaluate_latest(mock_get_latest):
     test_app = create_test_app()
-    from backend.kivi.schemas import EvaluationRunRead, EvaluationMetricsRead
+    from kivi.schemas import EvaluationRunRead, EvaluationMetricsRead
     from datetime import datetime, timezone
     mock_metrics = EvaluationMetricsRead(
         total_cases=10, passed=10, failed=0, pass_rate=1.0,
@@ -370,7 +370,7 @@ def test_htmx_evaluate_latest(mock_get_latest):
 
 @patch('frontend.router.delete_take')
 def test_htmx_revoke_take(mock_delete, mock_session):
-    from backend.kivi.schemas import DeleteResult, TombstoneRead
+    from kivi.schemas import DeleteResult, TombstoneRead
     from datetime import datetime, timezone
     mock_delete.return_value = DeleteResult(
         take_id="take_123",
@@ -406,7 +406,7 @@ def test_import_jsonl_parsing(mock_session):
     )
 
     with patch('frontend.router.import_takes') as mock_import_takes:
-        from backend.kivi.schemas import CorpusImportResult
+        from kivi.schemas import CorpusImportResult
         mock_import_takes.return_value = CorpusImportResult(
             total=2, ingested=2, memories_created=2, unscoped=0, failed=0, errors=[]
         )
@@ -423,8 +423,8 @@ def test_eval_case_renders_fields():
     test_app = create_test_app()
     client = TestClient(test_app)
 
-    with patch('backend.kivi.evaluation.get_case_result') as mock_get_case:
-        from backend.kivi.schemas import EvaluationCaseResultRead
+    with patch('kivi.evaluation.get_case_result') as mock_get_case:
+        from kivi.schemas import EvaluationCaseResultRead
         mock_get_case.return_value = EvaluationCaseResultRead(
             case_id="case_123",
             category="Temporal",
@@ -474,7 +474,7 @@ def test_timeline_selector_no_invalid_hxget(mock_session):
 def test_unexpected_exceptions_are_masked():
     test_app = create_test_app()
     client = TestClient(test_app)
-    with patch('backend.kivi.evaluation.get_latest_run', side_effect=Exception("SUPER SECRET EXCEPTION")):
+    with patch('kivi.evaluation.get_latest_run', side_effect=Exception("SUPER SECRET EXCEPTION")):
         response = client.get("/htmx/evaluate/latest")
         assert response.status_code == 200
         html = response.text
@@ -488,7 +488,7 @@ def test_import_result_headings(mock_session):
 
     # 1. Total Success
     with patch('frontend.router.import_takes') as mock_import_takes:
-        from backend.kivi.schemas import CorpusImportResult
+        from kivi.schemas import CorpusImportResult
         mock_import_takes.return_value = CorpusImportResult(
             total=2, ingested=2, memories_created=2, unscoped=0, failed=0, errors=[]
         )

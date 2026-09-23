@@ -1,14 +1,14 @@
 import json
 import pytest
 from fastapi.testclient import TestClient
-from backend.kivi.app import create_app, default_provider_bundle
-from backend.kivi.db import get_session
+from kivi.app import create_app, default_provider_bundle
+from kivi.db import get_session
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
-from backend.kivi.models import Base, Project
+from kivi.models import Base, Project
 from sqlalchemy.pool import StaticPool
-from backend.kivi.evaluation.providers import GoldExtractor, DeterministicEmbedder, DeterministicAnswerer
-from backend.kivi.settings import get_settings
+from kivi.evaluation.providers import GoldExtractor, DeterministicEmbedder, DeterministicAnswerer
+from kivi.settings import get_settings
 
 @pytest.fixture
 def test_db_session():

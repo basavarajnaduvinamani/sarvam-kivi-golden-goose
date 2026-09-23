@@ -17,8 +17,8 @@
 <div id="chat-history" class="conversation">
 </div>
 
-<form class="composer" hx-post="/htmx/briefing" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#briefing-loading" hx-on::after-request="if(event.detail.successful) this.elements.focus.value=''">
-  <input type="text" name="focus" placeholder="e.g. Provide the current project state and unresolved items..." required>
+<form class="composer" hx-post="/htmx/briefing" hx-target="#chat-history" hx-swap="innerHTML" hx-indicator="#briefing-loading" hx-on::after-request="if(event.detail.successful) this.elements.focus.value=''">
+  <input type="text" name="focus" placeholder="e.g. Provide the current project state and unresolved items (optional)...">
   <div class="composer-foot">
     <span>Scoped to
       <select id="project_id" name="project_id" required>
