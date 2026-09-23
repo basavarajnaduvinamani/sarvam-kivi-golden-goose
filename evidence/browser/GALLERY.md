@@ -10,7 +10,7 @@ For the complete reviewer experience, follow the step-by-step runbook in [RUN.md
 |---|---|---|
 | Hey Kivi — answered query | ![Ask answered](magicpath-ui/01_ask_answered.png) | A project-scoped question returns an answered response with claim-level citations and Take ID evidence chips. |
 | Evidence drawer | ![Evidence drawer](magicpath-ui/02_evidence_drawer.png) | Clicking a Take ID chip opens the evidence drawer showing raw ASR, formatted text, source application, and timestamp. |
-| Grounded briefing | ![Briefing](magicpath-ui/03_briefing.png) | A project briefing returns a grounded answer with supporting evidence. |
+| Grounded briefing | ![Briefing](magicpath-ui/03_briefing.png) | A project briefing returns a grounded multi-card dashboard with Scope, Commitments & Responsibilities, Open Questions, source citations, and accessible Markdown export. |
 | Timeline — correction | ![Timeline correction](magicpath-ui/04_timeline_correction.png) | The timeline shows a superseded memory alongside its active correction, preserving full audit history. |
 | Inbox — scope assignment | ![Inbox scoping](magicpath-ui/05_inbox_scope.png) | Unscoped takes await explicit user project assignment. No project is preselected. |
 | Import and evaluation | ![Import and eval](magicpath-ui/06_import_eval.png) | The evaluation panel runs and displays deterministic test results. |

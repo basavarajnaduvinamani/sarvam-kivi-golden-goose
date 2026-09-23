@@ -110,7 +110,7 @@ The application will run at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 Open [http://127.0.0.1:8000/inbox](http://127.0.0.1:8000/inbox) in a browser.
 1. Scope an unassigned memory take to a project.
 2. View the timeline to see memory lifecycle states and evidence limits.
-3. Use the briefing interface to ask grounded questions based on the ingested memory.
+3. Request a grounded Project Briefing containing Scope, Commitments & Responsibilities, and Open Questions, then optionally export the visible grounded briefing using Copy as Markdown.
 4. Correct a timeline entry and observe how the original memory is superseded and a new active memory is generated.
 5. Revoke evidence from a memory and observe the results.
 
