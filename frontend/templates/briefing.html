@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block top_title %}Briefing{% endblock %}
+
 {% block sidebar %}
 <div id="evidence-drawer">
   {% include "components/evidence_drawer.html" %}
@@ -8,15 +10,15 @@
 
 {% block content %}
 <div class="intro">
-  <h1>Project Briefing</h1>
-  <p>Request a grounded briefing for a project.</p>
+  <h1>Project Briefing.</h1>
+  <p>Request a grounded briefing for a project. Kivi will synthesize evidence across project records.</p>
 </div>
 
 <div id="chat-history" class="conversation">
 </div>
 
-<form class="composer" hx-post="/htmx/briefing" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#briefing-loading" hx-on::after-request="if(event.detail.successful) this.elements.focus.value=''">
-  <input type="text" name="focus" placeholder="e.g., provide the current project state and unresolved items.">
+<form class="composer" hx-post="/htmx/briefing" hx-target="#chat-history" hx-swap="innerHTML" hx-indicator="#briefing-loading" hx-on::after-request="if(event.detail.successful) this.elements.focus.value=''">
+  <input type="text" name="focus" placeholder="e.g. Provide the current project state and unresolved items (optional)...">
   <div class="composer-foot">
     <span>Scoped to
       <select id="project_id" name="project_id" required>
@@ -26,10 +28,140 @@
         {% endfor %}
       </select>
     </span>
-    <button type="submit" class="primary" hx-disabled-elt="this">generate briefing</button>
+    <button type="submit" class="primary" hx-disabled-elt="this">Generate Briefing</button>
   </div>
   <div id="briefing-loading" class="htmx-indicator warning" aria-live="polite">
     retrieving evidence...
   </div>
 </form>
+
+<script>
+window.copyBriefingMarkdown = function(btn) {
+  if (!btn) return;
+  var dashboard = btn.closest('.briefing-dashboard') || document.querySelector('.briefing-dashboard');
+  if (!dashboard) return;
+
+  // 1. Title
+  var projectName = dashboard.dataset.projectName || (dashboard.querySelector('.page-title') ? dashboard.querySelector('.page-title').textContent : 'Project').replace(/\s+Briefing\s*$/i, '').trim();
+  var titleLine = '# ' + projectName + ' Briefing';
+
+  // 2. Scope
+  var scopeElem = dashboard.querySelector('.scope-card .scope-overview-text') || dashboard.querySelector('.scope-card p');
+  var scopeText = scopeElem ? scopeElem.textContent.trim() : '';
+
+  // 3. Commitments & Responsibilities
+  var commitmentsCard = dashboard.querySelectorAll('.briefing-grid .card')[0];
+  var commitmentsText = '';
+  if (commitmentsCard) {
+    var rows = commitmentsCard.querySelectorAll('.entity-row');
+    if (rows.length > 0) {
+      var lines = [];
+      rows.forEach(function(r) {
+        var stmt = r.dataset.statement || (r.querySelector('.entity-name') ? r.querySelector('.entity-name').textContent.trim() : '');
+        var status = r.dataset.status || (r.querySelector('.type-body-sm') ? r.querySelector('.type-body-sm').textContent.trim().toUpperCase() : '');
+        var takes = r.dataset.takes;
+        if (!takes) {
+          var takeButtons = Array.from(r.querySelectorAll('button.take'));
+          takes = takeButtons.map(function(b) {
+            return b.textContent.replace('\u2197', '').trim();
+          }).filter(Boolean).join(', ');
+        }
+        lines.push('- ' + stmt + ' [' + status + '] \u2014 Evidence: ' + takes);
+      });
+      commitmentsText = lines.join('\n');
+    } else {
+      var emptyComm = commitmentsCard.querySelector('.empty-commitments-text') || commitmentsCard.querySelector('.type-body-sm.color-dim');
+      commitmentsText = emptyComm ? emptyComm.textContent.trim() : 'No active commitments recorded for this project.';
+    }
+  }
+
+  // 4. Open Questions
+  var questionsCard = dashboard.querySelectorAll('.briefing-grid .card')[1];
+  var questionsText = '';
+  if (questionsCard) {
+    var items = questionsCard.querySelectorAll('.unresolved-item');
+    if (items.length > 0) {
+      var qLines = [];
+      items.forEach(function(it) {
+        var text = it.dataset.text || (it.querySelector('.unresolved-text') ? it.querySelector('.unresolved-text').textContent.trim() : '');
+        var qTakes = it.dataset.takes;
+        if (!qTakes) {
+          var qButtons = Array.from(it.querySelectorAll('button.take'));
+          qTakes = qButtons.map(function(b) {
+            return b.textContent.replace('\u2197', '').trim();
+          }).filter(Boolean).join(', ');
+        }
+        qLines.push('- ' + text + ' \u2014 Evidence: ' + qTakes);
+      });
+      questionsText = qLines.join('\n');
+    } else {
+      var emptyQ = questionsCard.querySelector('.empty-questions-text') || questionsCard.querySelector('.type-body-sm.color-dim');
+      questionsText = emptyQ ? emptyQ.textContent.trim() : 'No open questions recorded for this project.';
+    }
+  }
+
+  var markdown = [
+    titleLine,
+    '',
+    '## Scope',
+    scopeText,
+    '',
+    '## Commitments & Responsibilities',
+    commitmentsText,
+    '',
+    '## Open Questions',
+    questionsText,
+    '',
+    'Generated from Kivi project-scoped evidence.'
+  ].join('\n');
+
+  function onSuccess() {
+    var label = btn.querySelector('.copy-label') || btn;
+    var prevText = label.textContent;
+    label.textContent = 'Copied!';
+    btn.setAttribute('aria-label', 'Briefing copied to clipboard');
+
+    var live = document.getElementById('copy-markdown-live');
+    if (live) {
+      live.textContent = 'Briefing copied as Markdown to clipboard.';
+    }
+
+    setTimeout(function() {
+      label.textContent = prevText;
+      btn.setAttribute('aria-label', 'Copy briefing as Markdown');
+      if (live) {
+        live.textContent = '';
+      }
+    }, 2000);
+  }
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(markdown).then(onSuccess).catch(function() {
+      window.fallbackCopy(markdown, onSuccess);
+    });
+  } else {
+    window.fallbackCopy(markdown, onSuccess);
+  }
+};
+
+window.fallbackCopy = function(text, cb) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.top = '0';
+  ta.style.left = '0';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand('copy');
+    if (cb) cb();
+  } catch (err) {
+    console.error('Fallback copy failed', err);
+  }
+  document.body.removeChild(ta);
+};
+</script>
 {% endblock %}

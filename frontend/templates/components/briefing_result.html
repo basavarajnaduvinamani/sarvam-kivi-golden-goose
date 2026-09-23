@@ -1,0 +1,199 @@
+{% if error %}
+<div class="kivi-card abstain" style="margin-top: 24px;">
+  <div class="eyebrow">SERVICE_ERROR — service unavailable</div>
+  <p class="warning">Kivi is currently unable to reach its reasoning service. Check your configuration and try again.</p>
+  <p class="faded">{{ error }}</p>
+  <button class="primary" style="margin-top: 12px;" onclick="const f = document.querySelector('input[name=focus]') || document.querySelector('input[name=question]'); if (f) { f.focus(); f.select(); }">Retry</button>
+</div>
+{% elif response.status in ['NO_EVIDENCE', 'NEEDS_CLARIFICATION', 'CONFLICTING_EVIDENCE'] %}
+<div class="briefing-dashboard" style="margin-top: 28px;" data-project-name="{{ project.name if project else 'Project' }}">
+  <div class="briefing-head mb-lg">
+    <div>
+      <h2 class="page-title">{{ project.name if project else 'Project' }} Briefing</h2>
+      <div class="subtitle">{{ project.name if project else 'Project' }} &middot; Generated just now</div>
+    </div>
+    <div>
+      <button type="button" class="btn-secondary" id="btn-copy-markdown" onclick="copyBriefingMarkdown(this)" aria-label="Copy briefing as Markdown">
+        <span class="copy-label">Copy as Markdown</span>
+      </button>
+      <span id="copy-markdown-live" class="sr-only" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <div class="card scope-card mb-lg" style="border-left: 3px solid #C8C5B8;">
+    <div class="eyebrow">SCOPE</div>
+    <h3 class="briefing-card-title">{{ project.name if project else 'Project' }} Scope</h3>
+    <p class="type-body-md color-secondary mt-sm mb-md scope-overview-text">
+      {% if response.decision_reason %}
+        {{ response.decision_reason }}
+      {% else %}
+        No active memory passed the project, lifecycle, evidence, and relevance gates.
+      {% endif %}
+    </p>
+    <div class="scope-footer">
+      <div class="scope-status">
+        <span class="brand-dot gray"></span>
+        <span>Insufficient project evidence</span>
+      </div>
+      <div class="scope-count">
+        {{ indexed_count|default(0) }} indexed document{% if indexed_count != 1 %}s{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="briefing-grid">
+    <!-- Commitments & Responsibilities Card -->
+    <div class="card">
+      <div class="eyebrow">COMMITMENTS</div>
+      <h3 class="briefing-card-title">Commitments &amp; Responsibilities</h3>
+      {% if commitments %}
+      <div class="entity-list mt-md">
+        {% for c in commitments %}
+        <div class="entity-row" data-statement="{{ c.statement }}" data-status="{{ c.status|upper }}" data-takes="{{ c.take_ids|join(', ') }}">
+          <div style="flex-grow: 1; padding-right: 12px;">
+            <div class="entity-name">{{ c.statement }}</div>
+            <div class="type-body-sm color-dim" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">{{ c.status|upper }}</div>
+          </div>
+          <div class="entity-role-wrap">
+            {% for tid in c.take_ids %}
+            <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }} &#x2197;</button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="type-body-sm color-dim mt-md empty-commitments-text" style="padding: 16px 0;">No active commitments recorded for this project.</div>
+      {% endif %}
+    </div>
+
+    <!-- Open Questions Card -->
+    <div class="card">
+      <div class="eyebrow">UNRESOLVED</div>
+      <h3 class="briefing-card-title">Open Questions</h3>
+      {% if open_questions %}
+      <div class="unresolved-list mt-md">
+        {% for q in open_questions %}
+        <div class="unresolved-item" data-text="{{ q.text }}" data-takes="{{ q.take_ids|join(', ') }}">
+          <span class="dot-amber"></span>
+          <div class="unresolved-content">
+            <span class="unresolved-text">{{ q.text }}</span>
+            {% for tid in q.take_ids %}
+            <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }} &#x2197;</button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="type-body-sm color-dim mt-md empty-questions-text" style="padding: 16px 0;">No open questions recorded for this project.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% else %}
+<!-- Full Grounded Project Briefing Dashboard -->
+<div class="briefing-dashboard" style="margin-top: 28px;" data-project-name="{{ project.name if project else 'Project' }}">
+  <div class="briefing-head mb-lg">
+    <div>
+      <h2 class="page-title">{{ project.name if project else 'Project' }} Briefing</h2>
+      <div class="subtitle">{{ project.name if project else 'Project' }} &middot; Generated just now</div>
+    </div>
+    <div>
+      <button type="button" class="btn-secondary" id="btn-copy-markdown" onclick="copyBriefingMarkdown(this)" aria-label="Copy briefing as Markdown">
+        <span class="copy-label">Copy as Markdown</span>
+      </button>
+      <span id="copy-markdown-live" class="sr-only" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <!-- Primary Scope Card -->
+  <div class="card scope-card mb-lg">
+    <div class="eyebrow">SCOPE</div>
+    <h3 class="briefing-card-title">{{ project.name if project else 'Project' }} Scope</h3>
+    <div class="briefing-overview mt-sm mb-md">
+      <p class="type-body-md color-primary scope-overview-text" style="line-height: 24px;">{{ response.answer }}</p>
+      {% if response.claims %}
+        <div class="briefing-claims mt-sm">
+          {% for claim in response.claims %}
+            {% if claim.supporting_take_ids %}
+              <div class="source-line mt-xs">
+                <small class="color-dim">{{ claim.claim_text }}</small>
+                {% for tid in claim.supporting_take_ids %}
+                  <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }} &#x2197;</button>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% elif response.supporting_take_ids %}
+        <div class="mt-xs">
+          {% for tid in response.supporting_take_ids %}
+            <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }} &#x2197;</button>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <div class="scope-footer">
+      <div class="scope-status">
+        <span class="brand-dot"></span>
+        <span>Project-scoped evidence</span>
+      </div>
+      <div class="scope-count">
+        {{ indexed_count|default(0) }} indexed document{% if indexed_count != 1 %}s{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Lower Two-Column Grid -->
+  <div class="briefing-grid">
+    <!-- Commitments & Responsibilities Card -->
+    <div class="card">
+      <div class="eyebrow">COMMITMENTS</div>
+      <h3 class="briefing-card-title">Commitments &amp; Responsibilities</h3>
+      {% if commitments %}
+      <div class="entity-list mt-md">
+        {% for c in commitments %}
+        <div class="entity-row" data-statement="{{ c.statement }}" data-status="{{ c.status|upper }}" data-takes="{{ c.take_ids|join(', ') }}">
+          <div style="flex-grow: 1; padding-right: 12px;">
+            <div class="entity-name">{{ c.statement }}</div>
+            <div class="type-body-sm color-dim" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">{{ c.status|upper }}</div>
+          </div>
+          <div class="entity-role-wrap">
+            {% for tid in c.take_ids %}
+            <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }} &#x2197;</button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="type-body-sm color-dim mt-md empty-commitments-text" style="padding: 16px 0;">No active commitments recorded for this project.</div>
+      {% endif %}
+    </div>
+
+    <!-- Open Questions Card -->
+    <div class="card">
+      <div class="eyebrow">UNRESOLVED</div>
+      <h3 class="briefing-card-title">Open Questions</h3>
+      {% if open_questions %}
+      <div class="unresolved-list mt-md">
+        {% for q in open_questions %}
+        <div class="unresolved-item" data-text="{{ q.text }}" data-takes="{{ q.take_ids|join(', ') }}">
+          <span class="dot-amber"></span>
+          <div class="unresolved-content">
+            <span class="unresolved-text">{{ q.text }}</span>
+            {% for tid in q.take_ids %}
+            <button class="take" hx-get="/htmx/takes/{{ tid }}" hx-target="#evidence-drawer" aria-label="Inspect source: {{ tid }}">{{ tid }} &#x2197;</button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="type-body-sm color-dim mt-md empty-questions-text" style="padding: 16px 0;">No open questions recorded for this project.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}

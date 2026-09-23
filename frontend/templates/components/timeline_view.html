@@ -1,16 +1,20 @@
 {% if error %}
-<div class="card" style="border-color: rgba(255,107,107,0.30);">
+<div class="card border-failed">
   <div class="type-body-md color-primary">Something went wrong loading this project's timeline.</div>
-  <a href="#" onclick="htmx.ajax('GET', '/htmx/timeline/{{ project_id }}', '#timeline-results'); return false;" class="color-accent type-body-sm">try again</a>
+  <a href="#" onclick="htmx.ajax('GET', '/htmx/timeline/{{ project_id }}', '#timeline-results'); return false;" class="color-accent type-body-sm mt-sm inline-block">try again</a>
 </div>
 {% elif timeline %}
   {% if not timeline.entries %}
-  <div class="type-body-md color-dim text-center mt-lg">No memories found for this project yet.</div>
+  <div class="type-body-md color-dim text-center mt-lg" style="padding: 32px 0;">No memories found for this project yet.</div>
   {% else %}
+    <div class="flex items-center justify-between mb-md">
+      <div class="type-headline-sm color-primary">{{ timeline.project.name }}</div>
+      <div class="type-code-ts">{{ timeline.entries|length }} memory event{% if timeline.entries|length != 1 %}s{% endif %}</div>
+    </div>
     {% for entry in timeline.entries %}
-      <div class="card {% if corrected_memory_id and entry.memory_id == corrected_memory_id %}highlighted{% endif %}">
+      <div class="card {% if corrected_memory_id and entry.memory_id == corrected_memory_id %}highlighted{% endif %} {% if entry.lifecycle_status == 'ACTIVE' %}border-success{% elif entry.lifecycle_status == 'SUPERSEDED' %}border-superseded{% else %}border-failed{% endif %}" style="margin-bottom: 16px;">
         <div class="card-header">
-          <div class="type-label-action color-secondary" style="text-transform: capitalize;">{{ entry.memory_type }}</div>
+          <div class="type-label-action color-secondary" style="text-transform: capitalize; font-weight: 600;">{{ entry.memory_type }}</div>
           <div class="flex gap-xs">
             <!-- Epistemic Badge -->
             <div class="flex-col items-end">
@@ -28,7 +32,7 @@
           </div>
         </div>
 
-        <div class="type-body-lg color-primary mb-sm">
+        <div class="type-body-lg color-primary mb-sm" style="font-weight: 500;">
           {{ entry.subject }} {{ entry.predicate }} {{ entry.object_value }}
         </div>
 
@@ -39,40 +43,40 @@
         </div>
 
         {% if entry.supersedes_memory_id or entry.superseded_by_memory_ids %}
-        <div class="flex-col gap-xs mb-md">
+        <div class="flex-col gap-xs mb-md" style="background: #F8F7F2; padding: 8px 12px; border-radius: 6px;">
           {% if entry.supersedes_memory_id %}
-            <div class="type-body-sm color-muted">supersedes <span class="type-code-id">{{ entry.supersedes_memory_id }}</span></div>
+            <div class="type-body-sm color-muted">&larr; supersedes <span class="type-code-id">{{ entry.supersedes_memory_id }}</span></div>
           {% endif %}
           {% for by_id in entry.superseded_by_memory_ids %}
-            <div class="type-body-sm color-muted">superseded by <span class="type-code-id">{{ by_id }}</span></div>
+            <div class="type-body-sm color-muted">&rarr; superseded by <span class="type-code-id">{{ by_id }}</span></div>
           {% endfor %}
         </div>
         {% endif %}
 
-        <div class="type-label-cat color-dim uppercase mb-sm mt-md">evidence</div>
+        <div class="type-label-cat color-dim uppercase mb-sm mt-md">EVIDENCE</div>
         <div class="flex-col gap-sm mb-lg">
           {% for ev in entry.evidence %}
-            <div class="flex items-center gap-md" id="evidence-row-{{ ev.take_id }}">
+            <div class="flex items-center gap-md" id="evidence-row-{{ ev.take_id }}" style="padding: 6px 0; border-bottom: 1px solid #F0EFEA;">
               <button class="take-id-chip {% if ev.is_deleted %}deleted{% endif %}" hx-get="/htmx/takes/{{ ev.take_id }}" hx-target="#evidence-drawer-container" aria-label="Inspect source: {{ ev.take_id }}">
-                {{ ev.take_id }} {% if ev.is_deleted %}<span class="deleted-text">(deleted)</span>{% endif %}
+                {{ ev.take_id }} &#x2197; {% if ev.is_deleted %}<span class="deleted-text">(deleted)</span>{% endif %}
               </button>
               <span class="type-body-sm color-muted">{{ ev.source_application }}</span>
               <span class="type-body-sm color-dim italic">{{ ev.evidence_role }}</span>
               {% if not ev.is_deleted %}
-                <button hx-delete="/htmx/takes/{{ ev.take_id }}" hx-confirm="Are you sure you want to revoke this evidence?" hx-target="#evidence-row-{{ ev.take_id }}" hx-swap="outerHTML" class="btn-destructive ml-auto" aria-label="Revoke evidence: {{ ev.take_id }}">revoke</button>
+                <button hx-delete="/htmx/takes/{{ ev.take_id }}" hx-confirm="Are you sure you want to revoke this evidence?" hx-target="#evidence-row-{{ ev.take_id }}" hx-swap="outerHTML" class="btn-destructive ml-auto" aria-label="Revoke evidence: {{ ev.take_id }}">Revoke</button>
               {% endif %}
             </div>
           {% endfor %}
         </div>
 
         {% if entry.lifecycle_status == 'ACTIVE' %}
-        <form hx-post="/htmx/memories/{{ entry.memory_id }}/correct" hx-target="#timeline-results" class="mt-md" style="background-color: var(--color-surface-3); border: 1px solid var(--color-border-hairline); border-radius: var(--radius-md); padding: var(--space-md);">
-          <div class="type-label-cat color-muted mb-sm">correct this memory</div>
+        <form hx-post="/htmx/memories/{{ entry.memory_id }}/correct" hx-target="#timeline-results" class="mt-md" style="background-color: var(--color-surface-3, #FAF9F4); border: 1px solid #EBE9E1; border-radius: 8px; padding: 14px;">
+          <div class="type-label-cat color-muted mb-sm">CORRECT THIS MEMORY</div>
           <div class="flex items-center gap-sm">
             <input type="hidden" name="project_id" value="{{ timeline.project.id }}">
-            <input type="text" name="corrected_value" required placeholder="corrected value" class="flex-grow">
-            <input type="text" name="note" placeholder="optional note" class="flex-grow">
-            <button type="submit" class="btn-secondary" hx-disabled-elt="this">submit correction</button>
+            <input type="text" name="corrected_value" required placeholder="corrected value" class="flex-grow" style="padding: 6px 10px; border: 1px solid #C8C5B8; border-radius: 6px; font-size: 13px; background: #fff;">
+            <input type="text" name="note" placeholder="optional note" class="flex-grow" style="padding: 6px 10px; border: 1px solid #C8C5B8; border-radius: 6px; font-size: 13px; background: #fff;">
+            <button type="submit" class="btn-secondary" hx-disabled-elt="this">Submit Correction</button>
           </div>
         </form>
         {% endif %}

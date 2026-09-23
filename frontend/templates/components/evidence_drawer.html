@@ -1,29 +1,32 @@
 {% if missing %}
-<div class="drawer-overlay" hx-on:click="this.parentElement.innerHTML=''"></div>
-<aside class="drawer" aria-label="Evidence inspector">
-  <button class="drawer-close" hx-on:click="this.closest('#evidence-drawer').innerHTML=''" aria-label="Close drawer">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+<div class="drawer-overlay" hx-on:click="this.parentElement.innerHTML=''" aria-hidden="true"></div>
+<aside class="drawer" aria-label="Evidence drawer">
+  <button class="drawer-close" hx-on:click="this.closest('#evidence-drawer').innerHTML=''" aria-label="Close evidence drawer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
   </button>
-  <h2>Source Details</h2>
-  <div class="drawer-file">Not found</div>
+  <div class="eyebrow">Evidence</div>
+  <h2>Not Found</h2>
+  <div class="drawer-file">Unavailable</div>
   <p class="faded">This source could not be found.</p>
 </aside>
 {% elif not take %}
 <!-- empty state -->
 {% else %}
-<div class="drawer-overlay" hx-on:click="this.parentElement.innerHTML=''"></div>
-<aside class="drawer" aria-label="Evidence inspector">
-  <button class="drawer-close" hx-on:click="this.closest('#evidence-drawer').innerHTML=''" aria-label="Close drawer">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+<div class="drawer-overlay" hx-on:click="this.parentElement.innerHTML=''" aria-hidden="true"></div>
+<aside class="drawer" aria-label="Evidence drawer">
+  <button class="drawer-close" hx-on:click="this.closest('#evidence-drawer').innerHTML=''" aria-label="Close evidence drawer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
   </button>
-  <h2>Source Details</h2>
+  <div class="eyebrow">Evidence</div>
+  <h2>{{ take.id }}</h2>
   <div class="drawer-file">{{ take.source_application }}</div>
+  <span class="status {% if take.is_deleted %}gray{% endif %}">{% if take.is_deleted %}DELETED{% else %}INDEXED · ACTIVE{% endif %}</span>
 
-  <div class="drawer-section">
-    <div class="drawer-label">Metadata</div>
+  <section class="drawer-section">
+    <div class="drawer-label">PROVENANCE</div>
     <div class="prov-row">
       <span>ID</span>
-      <span>{{ take.id }}</span>
+      <span class="file">{{ take.id }}</span>
     </div>
     <div class="prov-row">
       <span>Project</span>
@@ -39,17 +42,17 @@
         {% if take.is_deleted %}deleted{% else %}active{% endif %}
       </span>
     </div>
-  </div>
+  </section>
 
-  <div class="drawer-section">
-    <div class="drawer-label">Formatted</div>
+  <section class="drawer-section">
+    <div class="drawer-label">FORMATTED TRANSCRIPT</div>
     <div class="claim">
       {{ take.formatted_text }}
     </div>
-  </div>
+  </section>
 
-  <div class="drawer-section">
-    <div class="drawer-label">Raw Capture</div>
+  <section class="drawer-section">
+    <div class="drawer-label">RAW AUDIO CAPTURE</div>
     <div class="claim">
       {% if take.raw_asr %}
         <em>{{ take.raw_asr }}</em>
@@ -57,6 +60,6 @@
         <span class="faded">Raw content has been removed.</span>
       {% endif %}
     </div>
-  </div>
+  </section>
 </aside>
 {% endif %}

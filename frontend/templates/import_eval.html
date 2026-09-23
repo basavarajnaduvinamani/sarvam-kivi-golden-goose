@@ -1,36 +1,43 @@
 {% extends "base.html" %}
 
+{% block top_title %}Import &amp; Evaluation{% endblock %}
+
 {% block sidebar_wrapper %}{% endblock %}
 
 {% block content_wrapper %}
-<div class="flex-col w-full" style="max-width: var(--layout-content-wide);">
+<div class="content" style="max-width: 1120px;">
+  <div class="intro">
+    <h1 class="page-title">Import &amp; Evaluation.</h1>
+    <p class="subtitle">Review indexed evidence, ingest JSONL corpus records, and run benchmark evaluations.</p>
+  </div>
+
   <div class="content-stage wide">
     <!-- Import Panel -->
     <section class="panel-section">
-      <h2 class="type-headline-sm color-primary mb-lg">import corpus</h2>
+      <h2 class="type-headline-sm color-primary mb-lg" style="text-transform: capitalize;">import corpus</h2>
       <form hx-post="/htmx/import" hx-target="#import-result" hx-encoding="multipart/form-data" class="flex-col gap-md">
         <div>
-          <label class="type-body-md color-secondary block mb-sm">select a <code>.jsonl</code> corpus file</label>
-          <input type="file" name="corpus_file" accept=".json,.jsonl" required class="w-full">
+          <label class="type-body-sm color-secondary block mb-sm">Select a <code>.jsonl</code> corpus file:</label>
+          <input type="file" name="corpus_file" accept=".json,.jsonl" required class="w-full" style="font-size: 12px; padding: 12px; border: 1px dashed #C8C5B8; border-radius: 8px; background: #FAF9F4; outline: none;">
         </div>
-        <div>
-          <button type="submit" class="btn-primary" hx-indicator="#import-indicator" hx-disabled-elt="this">import</button>
+        <div class="flex items-center gap-md">
+          <button type="submit" class="primary" style="margin-left: 0; padding: 8px 18px;" hx-indicator="#import-indicator" hx-disabled-elt="this">Import Corpus</button>
+          <div id="import-indicator" class="htmx-indicator type-body-sm color-muted" aria-live="polite">uploading...</div>
         </div>
-        <div id="import-indicator" class="htmx-indicator type-body-sm color-muted pulse" aria-live="polite">uploading...</div>
       </form>
       <div id="import-result" class="mt-lg"></div>
     </section>
 
     <!-- Evaluation Panel -->
     <section class="panel-section">
-      <h2 class="type-headline-sm color-primary mb-lg">evaluation</h2>
+      <h2 class="type-headline-sm color-primary mb-lg" style="text-transform: capitalize;">evaluation</h2>
       <div class="flex items-center gap-md mb-lg">
-        <button class="btn-secondary" hx-get="/htmx/evaluate/latest" hx-target="#eval-result" hx-indicator="#eval-indicator" hx-disabled-elt="this">fetch latest</button>
+        <button class="btn-secondary" hx-get="/htmx/evaluate/latest" hx-target="#eval-result" hx-indicator="#eval-indicator" hx-disabled-elt="this">Fetch Latest</button>
         <form hx-post="/htmx/evaluate/run" hx-target="#eval-result" style="margin:0;">
           <input type="hidden" name="mode" value="deterministic">
-          <button type="submit" class="btn-primary" hx-indicator="#eval-indicator" hx-disabled-elt="this">run evaluation</button>
+          <button type="submit" class="primary" style="margin-left: 0; padding: 8px 18px;" hx-indicator="#eval-indicator" hx-disabled-elt="this">Run Evaluation</button>
         </form>
-        <div id="eval-indicator" class="htmx-indicator type-body-sm color-muted pulse" aria-live="polite">running...</div>
+        <div id="eval-indicator" class="htmx-indicator type-body-sm color-muted" aria-live="polite">running...</div>
       </div>
       <div id="eval-result">
         <div class="type-body-md color-dim">

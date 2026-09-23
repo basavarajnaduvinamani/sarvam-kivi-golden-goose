@@ -8,25 +8,25 @@
 
 {% block content %}
 <div class="intro">
-  <h1>Hey Kivi</h1>
-  <p>Hello. I'm Kivi. Ask me anything about your projects.</p>
+  <h1>Hey Kivi.</h1>
+  <p>Ask anything within your project scope. Kivi will answer from verified evidence only.</p>
 </div>
 
 <div id="chat-history" class="conversation">
 </div>
 
 <form class="composer" hx-post="/htmx/ask" hx-target="#chat-history" hx-swap="beforeend" hx-indicator="#ask-loading" hx-on::after-request="if(event.detail.successful) this.elements.question.value=''">
-  <input type="text" name="question" required placeholder="ask hey kivi...">
+  <input type="text" name="question" required placeholder="Ask Kivi about your projects…">
   <div class="composer-foot">
     <span>Scoped to
       <select id="project_id" name="project_id">
-        <option value="">— no specific project —</option>
+        <option value="">— choose a project —</option>
         {% for proj in projects %}
         <option value="{{ proj.id }}">{{ proj.name }}</option>
         {% endfor %}
       </select>
     </span>
-    <button type="submit" class="primary" hx-disabled-elt="this">ask</button>
+    <button type="submit" class="primary" hx-disabled-elt="this">Ask</button>
   </div>
   <div id="ask-loading" class="htmx-indicator warning" aria-live="polite">
     retrieving evidence...
